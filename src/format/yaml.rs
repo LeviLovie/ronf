@@ -123,7 +123,7 @@ key: value"#;
 - name: John
 - name: Jane"#;
         let parsed_map = deserialize(yaml_string.to_string());
-        assert!(!parsed_map.is_ok());
+        assert!(parsed_map.is_err());
     }
 
     #[test]
