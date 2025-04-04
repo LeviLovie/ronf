@@ -1,7 +1,7 @@
 name: CI
 
 permissions:
-  contents: read
+  contents: write
 
 on:
   pull_request:
@@ -166,16 +166,37 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          components: llvm-tools-preview
+
       - uses: Swatinem/rust-cache@v2
-      - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+
+      - name: Make a directory to store coverage in
+        run: mkdir coverage
+
       - name: Gather coverage
-        run: cargo tarpaulin --output-dir coverage --out lcov
-      - name: Publish to Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo llvm-cov --lcov --output-path coverage/lcov.info
+
+      - name: Generate coverage summary
+        run: cargo llvm-cov --summary-only --json > coverage/summary.json
+
+      - name: Extract coverage percentage
+        run: |
+          echo "$(jq '.data[0].totals.lines.pct' coverage/summary.json)" > coverage/coverage.txt
+
+      - name: Upload coverage report
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout --orphan gh-pages
+          mv coverage/coverage.txt .
+          git add coverage.txt
+          git commit -m "Update coverage"
+          git push -f origin gh-pages
