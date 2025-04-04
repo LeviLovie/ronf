@@ -35,12 +35,8 @@ impl ConfigBuilder {
             for (key, value) in env_vars.iter() {
                 let key = key.to_lowercase();
                 let mut key_parts: Vec<&str> = key.split('_').collect();
-                key_parts = key_parts
-                    .iter()
-                    .filter(|&&part| part != "")
-                    .map(|&part| part)
-                    .collect();
-                if key_parts.len() < 1 {
+                key_parts.retain(|&part| !part.is_empty());
+                if key_parts.is_empty() {
                     continue;
                 }
 
