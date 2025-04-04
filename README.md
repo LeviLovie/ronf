@@ -1,6 +1,6 @@
 [![Rust](https://github.com/LeviLovie/ronf/actions/workflows/ci.yaml/badge.svg)](https://github.com/LeviLovie/ronf/actions)
 [![Docs](https://docs.rs/ronf/badge.svg)](https://docs.rs/ronf)
-[![Coverage](https://coveralls.io/repos/github/LeviLovie/ronf/badge.svg?branch=main)](https://coveralls.io/github/LeviLovie/ronf?branch=main)
+![Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/LeviLovie/ronf/gh-pages/coverage.json&query=$.coverage&label=Coverage)
 [![Crates](https://img.shields.io/crates/v/ronf.svg)](https://crates.io/crates/ronf)
 [![License](https://img.shields.io/crates/l/ronf.svg)](https://choosealicense.com/licenses/mit/)
 # Ronf
