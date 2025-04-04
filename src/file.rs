@@ -65,7 +65,7 @@ impl File {
 
         let extension = path
             .split('.')
-            .last()
+            .next_back()
             .ok_or_else(|| format!("Failed to get file extension from {}", path))?;
         let format = FileFormat::from_extension(extension)
             .ok_or_else(|| format!("Unsupported file extension: {}", extension))?;
