@@ -793,8 +793,9 @@ impl TryInto<bool> for Value {
     }
 }
 
-impl From<Map<String, Value>> for Value {
-    fn from(value: Map<String, Value>) -> Self {
+#[cfg(feature = "ordered")]
+impl From<indexmap::IndexMap<String, Value>> for Value {
+    fn from(value: indexmap::IndexMap<String, Value>) -> Self {
         Value::Table(value)
     }
 }
