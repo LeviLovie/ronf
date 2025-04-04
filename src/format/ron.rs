@@ -6,11 +6,7 @@ pub(crate) fn deserialize(content: String) -> Result<Map<String, Value>, String>
     match parsed_value {
         ron::Value::Map(m) => {
             for (key, value) in m {
-                let mut new_key = String::new();
-                if let ron::Value::String(s) = key {
-                    new_key = s;
-                }
-                map.insert(new_key, from_ron_value(value));
+                map.insert(check_key(key), from_ron_value(value));
             }
         }
         _ => panic!("Expected a RON map"),
@@ -46,15 +42,18 @@ fn from_ron_value(value: ron::Value) -> Value {
         ron::Value::Map(map) => {
             let mut new_map = Map::new();
             for (key, value) in map {
-                let mut new_key = String::new();
-                if let ron::Value::String(s) = key {
-                    new_key = s;
-                }
-                new_map.insert(new_key, from_ron_value(value));
+                new_map.insert(check_key(key), from_ron_value(value));
             }
             Value::Table(new_map)
         }
         ron::Value::Unit => Value::None,
+    }
+}
+
+fn check_key(key: ron::Value) -> String {
+    match key {
+        ron::Value::String(s) => s,
+        _ => panic!("Invalid key type in RON map"),
     }
 }
 
@@ -100,6 +99,20 @@ fn to_ron_value(value: Value) -> ron::Value {
 mod test {
     use super::*;
     use crate::value::Value;
+
+    #[test]
+    fn test_check_key() {
+        let key = ron::Value::String("key".to_string());
+        let result = check_key(key);
+        assert_eq!(result, "key");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_check_key_not_string() {
+        let key = ron::Value::Number(ron::Number::from(42));
+        let _result = check_key(key);
+    }
 
     #[test]
     fn test_invalid() {

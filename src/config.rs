@@ -254,12 +254,12 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key1\": \"value\"}",
             ))
             .build()
             .unwrap();
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key1").unwrap(),
             &Value::String("value".to_string())
         );
     }
@@ -270,13 +270,13 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key2\": \"value\"}",
             ))
             .build()
             .unwrap();
-        config.set("key", Value::String("new_value".to_string()));
+        config.set("key2", Value::String("new_value".to_string()));
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key2").unwrap(),
             &Value::String("new_value".to_string())
         );
     }
@@ -287,11 +287,11 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key3\": \"value\"}",
             ))
             .build()
             .unwrap();
-        assert_eq!(config.list(), vec!["key".to_string()]);
+        assert_eq!(config.list(), vec!["key3".to_string()]);
     }
 
     #[test]
@@ -301,7 +301,7 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key4\": \"value\"}",
             ))
             .build()
             .unwrap();
@@ -309,11 +309,11 @@ mod test {
             .load(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"new_value\", \"another_key\": \"another_value\"}",
+                "{\"key4\": \"new_value\", \"key5\": \"another_value\"}",
             ))
             .unwrap();
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key4").unwrap(),
             &Value::String("new_value".to_string())
         );
 
@@ -321,14 +321,14 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key6\": \"value\"}",
             ))
             .build()
             .unwrap()
             .load(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"new_value}",
+                "{\"key6\": \"new_value}",
             ));
         assert!(config.is_err());
     }
@@ -339,13 +339,13 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key7\": \"value\"}",
             ))
             .build()
             .unwrap();
-        config.set("key", Value::String("new_value".to_string()));
+        config.set("key7", Value::String("new_value".to_string()));
         let save = config.save(FileFormat::Json).unwrap();
-        assert_eq!(save, "{\"key\":\"new_value\"}");
+        assert_eq!(save, "{\"key7\":\"new_value\"}");
     }
 
     #[test]
@@ -354,7 +354,7 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value}",
+                "{\"key8\": \"value}",
             ))
             .build();
         assert!(config.is_err());
@@ -366,18 +366,18 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key9\": \"value\"}",
             ))
             .load(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"new_value\"}",
+                "{\"key9\": \"new_value\"}",
             ))
             .unwrap()
             .build()
             .unwrap();
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key9").unwrap(),
             &Value::String("new_value".to_string())
         );
     }
@@ -388,7 +388,7 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key10\": \"value\"}",
             ))
             .load(File::new_str("test_file", FileFormat::Json, ""));
         assert!(config.is_err());
@@ -400,64 +400,70 @@ mod test {
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key11\": \"value\"}",
             ))
             .load(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key2\": \"new_value\"}",
+                "{\"key12\": \"new_value\"}",
             ))
             .unwrap()
             .build()
             .unwrap();
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key11").unwrap(),
             &Value::String("value".to_string())
         );
-        assert!(config.get("key2").is_none());
+        assert!(config.get("key12").is_none());
     }
 
     #[test]
     #[cfg(feature = "env")]
     fn test_env_vars() {
         unsafe {
-            std::env::set_var("KEY", "overwrite");
+            std::env::set_var("KEY13", "overwrite");
         }
 
         let config = Config::builder()
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": \"value\"}",
+                "{\"key13\": \"value\"}",
             ))
             .build()
             .unwrap();
         assert_eq!(
-            config.get("key").unwrap(),
+            config.get("key13").unwrap(),
             &Value::String("overwrite".to_string())
         );
+
+        unsafe {
+            std::env::remove_var("KEY13");
+        }
     }
 
     #[test]
     #[cfg(feature = "env")]
     fn test_env_vars_table() {
         unsafe {
-            std::env::set_var("KEY", "");
+            std::env::set_var("KEY14", "overwrite");
         }
+
         let config = Config::builder()
             .add_file(File::new_str(
                 "test_file",
                 FileFormat::Json,
-                "{\"key\": {\"secondary_key\": \"value\"}}",
+                "{\"key14\": {\"key15\": \"value\"}}",
             ))
             .build()
             .unwrap();
         let mut expected = Map::new();
-        expected.insert(
-            "secondary_key".to_string(),
-            Value::String("value".to_string()),
-        );
-        assert_eq!(config.get("key").unwrap(), &Value::Table(expected));
+        expected.insert("key15".to_string(), Value::String("value".to_string()));
+        assert_eq!(config.get("key14").unwrap(), &Value::Table(expected));
+
+        unsafe {
+            std::env::remove_var("KEY14");
+        }
     }
 
     mod serialize_deserialize {
