@@ -127,9 +127,11 @@ mod test {
         let input = "---\nkey: value\n---\nanother: doc";
         let result = deserialize(input.to_string());
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("Expected a single YAML document"));
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Expected a single YAML document")
+        );
     }
 
     #[test]

@@ -249,6 +249,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_config_get() {
         let config = Config::builder()
             .add_file(File::new_str(
@@ -265,6 +266,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_config_set() {
         let mut config = Config::builder()
             .add_file(File::new_str(
@@ -282,6 +284,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_config_list() {
         let config = Config::builder()
             .add_file(File::new_str(
@@ -296,6 +299,7 @@ mod test {
 
     #[test]
     #[cfg(feature = "load_after_build")]
+    #[cfg(feature = "json")]
     fn test_config_load() {
         let mut config = Config::builder()
             .add_file(File::new_str(
@@ -334,6 +338,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_config_save() {
         let mut config = Config::builder()
             .add_file(File::new_str(
@@ -361,6 +366,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_builder_load() {
         let config = Config::builder()
             .add_file(File::new_str(
@@ -383,6 +389,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_builder_load_failure() {
         let config = Config::builder()
             .add_file(File::new_str(
@@ -395,6 +402,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_builder_load_none() {
         let config = Config::builder()
             .add_file(File::new_str(

@@ -69,7 +69,7 @@ fn to_ron_value(value: Value) -> ron::Value {
     match value {
         Value::String(s) => ron::Value::String(s),
         Value::Int(i) => {
-            if let Some(i32_value) = i.try_into().ok() {
+            if let Ok(i32_value) = i.try_into() {
                 ron::Value::Number(ron::Number::I32(i32_value))
             } else {
                 ron::Value::Number(ron::Number::I64(i))
