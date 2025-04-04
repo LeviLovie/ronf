@@ -110,7 +110,7 @@ impl File {
             FileFormat::Toml => {
                 #[cfg(feature = "toml")]
                 {
-                    unimplemented!("Parsing TOML file: {}", self.path);
+                    crate::format::toml::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "toml"))]

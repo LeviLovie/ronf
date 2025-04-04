@@ -116,7 +116,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                unimplemented!("Saving TOML file");
+                Ok(crate::format::toml::serialize(map.clone()))
             }
 
             #[cfg(not(feature = "toml"))]
@@ -157,7 +157,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                unimplemented!("Loading TOML file");
+                crate::format::toml::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "toml"))]

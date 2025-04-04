@@ -76,6 +76,36 @@ mod test {
     use super::*;
     use crate::value::Value;
 
+    mod deserialize {
+        use super::*;
+
+        #[test]
+        fn test_deserialize() {
+            let json_string = r#"{"key":"value"}"#;
+            let parsed_map = deserialize(json_string.to_string()).unwrap();
+            assert_eq!(
+                parsed_map,
+                Map::from_iter(vec![(
+                    "key".to_string(),
+                    Value::String("value".to_string())
+                )])
+            );
+        }
+
+        #[test]
+        fn test_deserialize_array() {
+            let json_string = r#"{"array":[1,"two"]}"#;
+            let parsed_map = deserialize(json_string.to_string()).unwrap();
+            assert_eq!(
+                parsed_map,
+                Map::from_iter(vec![(
+                    "array".to_string(),
+                    Value::Array(vec![Value::Int(1), Value::String("two".to_string())])
+                )])
+            );
+        }
+    }
+
     mod serialize {
         use super::*;
 

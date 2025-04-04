@@ -2,7 +2,7 @@ use crate::value::{Map, Table, Value};
 
 pub(crate) fn deserialize(content: String) -> Result<Map<String, Value>, String> {
     let mut yaml_content = yaml_rust2::YamlLoader::load_from_str(&content)
-        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
+        .map_err(|e| format!("Failed to parse YAML: {}", e))?;
     let root = match yaml_content.len() {
         0 => yaml_rust2::Yaml::Hash(yaml_rust2::yaml::Hash::new()),
         1 => std::mem::replace(&mut yaml_content[0], yaml_rust2::Yaml::Null),
@@ -103,6 +103,32 @@ fn to_yaml_value_single(value: Value) -> yaml_rust2::Yaml {
 mod test {
     use super::*;
     use crate::value::Value;
+
+    mod deserialize {
+        use super::*;
+
+        #[test]
+        fn test_deserialize() {
+            let yaml_string = r#"---
+key: value"#;
+            let parsed_map = deserialize(yaml_string.to_string()).unwrap();
+            assert_eq!(
+                parsed_map,
+                Map::from_iter(vec![(
+                    "key".to_string(),
+                    Value::String("value".to_string())
+                )])
+            );
+        }
+        #[test]
+        fn test_deserialize_array() {
+            let yaml_string = r#"---
+- name: John
+- name: Jane"#;
+            let parsed_map = deserialize(yaml_string.to_string());
+            assert_eq!(parsed_map.is_ok(), false);
+        }
+    }
 
     mod serialize {
         use super::*;
