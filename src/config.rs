@@ -122,6 +122,15 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
             #[cfg(not(feature = "toml"))]
             Err("TOML format feature is not enabled".to_string())
         }
+        FileFormat::Ron => {
+            #[cfg(feature = "ron")]
+            {
+                Ok(crate::format::ron::serialize(map.clone()))
+            }
+
+            #[cfg(not(feature = "ron"))]
+            Err("RON format feature is not enabled".to_string())
+        }
     }
 }
 
@@ -162,6 +171,15 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
 
             #[cfg(not(feature = "toml"))]
             Err("TOML format feature is not enabled".to_string())
+        }
+        FileFormat::Ron => {
+            #[cfg(feature = "ron")]
+            {
+                crate::format::ron::deserialize(save.clone())
+            }
+
+            #[cfg(not(feature = "ron"))]
+            Err("RON format feature is not enabled".to_string())
         }
     }
 }

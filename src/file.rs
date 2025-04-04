@@ -6,6 +6,7 @@ pub enum FileFormat {
     Json,
     Yaml,
     Toml,
+    Ron,
 }
 
 impl FileFormat {
@@ -15,6 +16,7 @@ impl FileFormat {
             "json" => Some(FileFormat::Json),
             "yaml" => Some(FileFormat::Yaml),
             "toml" => Some(FileFormat::Toml),
+            "ron" => Some(FileFormat::Ron),
             _ => None,
         }
     }
@@ -27,6 +29,7 @@ impl std::fmt::Display for FileFormat {
             FileFormat::Json => write!(f, "json"),
             FileFormat::Yaml => write!(f, "yaml"),
             FileFormat::Toml => write!(f, "toml"),
+            FileFormat::Ron => write!(f, "ron"),
         }
     }
 }
@@ -115,6 +118,15 @@ impl File {
 
                 #[cfg(not(feature = "toml"))]
                 Err("TOML format feature is not enabled".to_string())
+            }
+            FileFormat::Ron => {
+                #[cfg(feature = "ron")]
+                {
+                    crate::format::ron::deserialize(self.content.clone())
+                }
+
+                #[cfg(not(feature = "ron"))]
+                Err("RON format feature is not enabled".to_string())
             }
         }
     }

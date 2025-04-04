@@ -69,12 +69,9 @@ fn to_toml_value(value: Value) -> toml::Value {
 mod test {
     use super::*;
 
-    mod deserialize {
-        use super::*;
-
-        #[test]
-        fn test_deserialize() {
-            let toml_content = r#"
+    #[test]
+    fn test_deserialize() {
+        let toml_content = r#"
             key = "value"
             int_key = 42
             float_key = 3.14
@@ -82,75 +79,70 @@ mod test {
             array_key = [1, 2, 3]
             table_key = { nested_key = "nested_value" }
             "#;
-            let parsed_map = deserialize(toml_content.to_string()).unwrap();
+        let parsed_map = deserialize(toml_content.to_string()).unwrap();
+        assert_eq!(
+            parsed_map.get("key").unwrap(),
+            &Value::String("value".to_string())
+        );
+        assert_eq!(parsed_map.get("int_key").unwrap(), &Value::Int(42));
+        assert_eq!(parsed_map.get("float_key").unwrap(), &Value::Float(3.14));
+        assert_eq!(parsed_map.get("bool_key").unwrap(), &Value::Bool(true));
+        assert_eq!(
+            parsed_map.get("array_key").unwrap(),
+            &Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
+        );
+        if let Value::Table(table) = parsed_map.get("table_key").unwrap() {
             assert_eq!(
-                parsed_map.get("key").unwrap(),
-                &Value::String("value".to_string())
+                table.get("nested_key").unwrap(),
+                &Value::String("nested_value".to_string())
             );
-            assert_eq!(parsed_map.get("int_key").unwrap(), &Value::Int(42));
-            assert_eq!(parsed_map.get("float_key").unwrap(), &Value::Float(3.14));
-            assert_eq!(parsed_map.get("bool_key").unwrap(), &Value::Bool(true));
-            assert_eq!(
-                parsed_map.get("array_key").unwrap(),
-                &Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
-            );
-            if let Value::Table(table) = parsed_map.get("table_key").unwrap() {
-                assert_eq!(
-                    table.get("nested_key").unwrap(),
-                    &Value::String("nested_value".to_string())
-                );
-            } else {
-                panic!("Expected a table for 'table_key'");
-            }
+        } else {
+            panic!("Expected a table for 'table_key'");
         }
+    }
 
-        #[test]
-        fn test_desetialize_section() {
-            let toml_content = r#"
+    #[test]
+    fn test_desetialize_section() {
+        let toml_content = r#"
             [section]
             key = "value"
             int_key = 42
             "#;
-            let parsed_map = deserialize(toml_content.to_string()).unwrap();
-            if let Value::Table(table) = parsed_map.get("section").unwrap() {
-                assert_eq!(
-                    table.get("key").unwrap(),
-                    &Value::String("value".to_string())
-                );
-                assert_eq!(table.get("int_key").unwrap(), &Value::Int(42));
-            } else {
-                panic!("Expected a table for 'section'");
-            }
+        let parsed_map = deserialize(toml_content.to_string()).unwrap();
+        if let Value::Table(table) = parsed_map.get("section").unwrap() {
+            assert_eq!(
+                table.get("key").unwrap(),
+                &Value::String("value".to_string())
+            );
+            assert_eq!(table.get("int_key").unwrap(), &Value::Int(42));
+        } else {
+            panic!("Expected a table for 'section'");
         }
     }
 
-    mod serialize {
-        use super::*;
+    #[test]
+    fn test_serialize() {
+        let mut map = Map::new();
+        map.insert("key".to_string(), Value::String("value".to_string()));
+        map.insert("int_key".to_string(), Value::Int(42));
+        map.insert("float_key".to_string(), Value::Float(3.14));
+        map.insert("bool_key".to_string(), Value::Bool(true));
+        let serialized = serialize(map);
+        assert!(serialized.contains("key = \"value\""));
+        assert!(serialized.contains("int_key = 42"));
+        assert!(serialized.contains("float_key = 3.14"));
+        assert!(serialized.contains("bool_key = true"));
+    }
 
-        #[test]
-        fn test_serialize() {
-            let mut map = Map::new();
-            map.insert("key".to_string(), Value::String("value".to_string()));
-            map.insert("int_key".to_string(), Value::Int(42));
-            map.insert("float_key".to_string(), Value::Float(3.14));
-            map.insert("bool_key".to_string(), Value::Bool(true));
-            let serialized = serialize(map);
-            assert!(serialized.contains("key = \"value\""));
-            assert!(serialized.contains("int_key = 42"));
-            assert!(serialized.contains("float_key = 3.14"));
-            assert!(serialized.contains("bool_key = true"));
-        }
-
-        #[test]
-        fn test_serialize_array() {
-            let mut map = Map::new();
-            map.insert(
-                "array_key".to_string(),
-                Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)]),
-            );
-            let serialized = serialize(map);
-            assert!(serialized.contains("array_key = [1, 2, 3]"));
-        }
+    #[test]
+    fn test_serialize_array() {
+        let mut map = Map::new();
+        map.insert(
+            "array_key".to_string(),
+            Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)]),
+        );
+        let serialized = serialize(map);
+        assert!(serialized.contains("array_key = [1, 2, 3]"));
     }
 
     mod from_toml_value {

@@ -21,7 +21,7 @@ ron = { version = "0.9.0", optional = true }
 serde_json = "1.0.140"
 
 [features]
-default = ["ordered", "json", "toml"]
+default = ["ordered", "json", "ron"]
 ordered = ["dep:indexmap"]
 load_after_build = []
 read_file = []
@@ -51,3 +51,8 @@ required-features = ["ini"]
 name = "toml"
 path = "examples/formats/toml.rs"
 required-features = ["toml"]
+
+[[example]]
+name = "ron"
+path = "examples/formats/ron.rs"
+required-features = ["ron"]

@@ -104,63 +104,55 @@ mod test {
     use super::*;
     use crate::value::Value;
 
-    mod deserialize {
-        use super::*;
-
-        #[test]
-        fn test_deserialize() {
-            let yaml_string = r#"---
+    #[test]
+    fn test_deserialize() {
+        let yaml_string = r#"---
 key: value"#;
-            let parsed_map = deserialize(yaml_string.to_string()).unwrap();
-            assert_eq!(
-                parsed_map,
-                Map::from_iter(vec![(
-                    "key".to_string(),
-                    Value::String("value".to_string())
-                )])
-            );
-        }
-        #[test]
-        fn test_deserialize_array() {
-            let yaml_string = r#"---
+        let parsed_map = deserialize(yaml_string.to_string()).unwrap();
+        assert_eq!(
+            parsed_map,
+            Map::from_iter(vec![(
+                "key".to_string(),
+                Value::String("value".to_string())
+            )])
+        );
+    }
+    #[test]
+    fn test_deserialize_array() {
+        let yaml_string = r#"---
 - name: John
 - name: Jane"#;
-            let parsed_map = deserialize(yaml_string.to_string());
-            assert_eq!(parsed_map.is_ok(), false);
-        }
+        let parsed_map = deserialize(yaml_string.to_string());
+        assert_eq!(parsed_map.is_ok(), false);
     }
 
-    mod serialize {
-        use super::*;
-
-        #[test]
-        fn test_serialize() {
-            let mut map = Map::new();
-            map.insert("key".to_string(), Value::String("value".to_string()));
-            let yaml_string = serialize(map);
-            assert_eq!(
-                yaml_string,
-                r#"---
+    #[test]
+    fn test_serialize() {
+        let mut map = Map::new();
+        map.insert("key".to_string(), Value::String("value".to_string()));
+        let yaml_string = serialize(map);
+        assert_eq!(
+            yaml_string,
+            r#"---
 key: value"#
-            );
-        }
+        );
+    }
 
-        #[test]
-        fn test_serialize_array() {
-            let mut map = Map::new();
-            map.insert(
-                "array".to_string(),
-                Value::Array(vec![Value::Int(1), Value::String("two".to_string())]),
-            );
-            let yaml_string = serialize(map);
-            assert_eq!(
-                yaml_string,
-                r#"---
+    #[test]
+    fn test_serialize_array() {
+        let mut map = Map::new();
+        map.insert(
+            "array".to_string(),
+            Value::Array(vec![Value::Int(1), Value::String("two".to_string())]),
+        );
+        let yaml_string = serialize(map);
+        assert_eq!(
+            yaml_string,
+            r#"---
 array:
   - 1
   - two"#
-            );
-        }
+        );
     }
 
     mod from_yaml_value {
