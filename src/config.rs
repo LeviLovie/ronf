@@ -29,6 +29,34 @@ impl ConfigBuilder {
             }
         }
 
+        #[cfg(feature = "env")]
+        {
+            let env_vars = get_env_vars();
+            for (key, value) in env_vars.iter() {
+                let key = key.to_lowercase();
+                let mut key_parts: Vec<&str> = key.split('_').collect();
+                key_parts = key_parts
+                    .iter()
+                    .filter(|&&part| part != "")
+                    .map(|&part| part)
+                    .collect();
+                if key_parts.len() < 1 {
+                    continue;
+                }
+
+                let val = match config.values.get(key_parts[0]) {
+                    Some(v) => v,
+                    None => {
+                        continue;
+                    }
+                };
+                if !val.is_table() {
+                    *config.values.get_mut(key_parts[0]).unwrap() = value.clone();
+                    continue;
+                }
+            }
+        }
+
         Ok(config)
     }
 
@@ -41,6 +69,15 @@ impl ConfigBuilder {
         self.changes = load_map(save, format)?;
         Ok(self)
     }
+}
+
+#[cfg(feature = "env")]
+fn get_env_vars() -> Map<String, Value> {
+    let mut env_vars = Map::new();
+    for (key, value) in std::env::vars() {
+        env_vars.insert(key, Value::String(value));
+    }
+    env_vars
 }
 
 /// Configuration structure to hold parsed values

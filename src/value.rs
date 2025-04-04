@@ -36,6 +36,17 @@ impl Value {
             _ => None,
         }
     }
+
+    pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
+        match self {
+            Value::Table(table) => table.get_mut(key),
+            _ => None,
+        }
+    }
+
+    pub fn is_table(&self) -> bool {
+        matches!(self, Value::Table(_))
+    }
 }
 
 struct ValueDeserializer {
