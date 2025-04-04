@@ -191,12 +191,17 @@ jobs:
         run: |
           jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage.txt
 
+      - name: Create json
+        run: |
+          COVERAGE=$(jq '.data[0].totals.lines.percent' coverage/summary.json)
+          echo "{\"coverage\": \"${COVERAGE}%\"}" > coverage/coverage.json
+
       - name: Upload coverage report
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git checkout --orphan gh-pages
-          mv coverage/coverage.txt .
-          git add coverage.txt
+          mv coverage/coverage.json .
+          git add coverage.json
           git commit -m "Update coverage"
           git push -f origin gh-pages
