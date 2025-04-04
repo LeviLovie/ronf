@@ -182,14 +182,14 @@ jobs:
         run: mkdir coverage
 
       - name: Gather coverage
-        run: cargo llvm-cov --lcov --output-path coverage/lcov.info
+        run: cargo llvm-cov --lcov --all-features --output-path coverage/lcov.info
 
       - name: Generate coverage summary
-        run: cargo llvm-cov --summary-only --json > coverage/summary.json
+        run: cargo llvm-cov --summary-only --all-features --json > coverage/summary.json
 
       - name: Extract coverage percentage
         run: |
-          echo "$(jq '.data[0].totals.lines.pct' coverage/summary.json)" > coverage/coverage.txt
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage.txt
 
       - name: Upload coverage report
         run: |
