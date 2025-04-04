@@ -65,7 +65,7 @@ fn to_json_value_single(value: Value) -> serde_json::Value {
         Value::Float(f) => serde_json::Value::Number(serde_json::Number::from_f64(f).unwrap()),
         Value::String(s) => serde_json::Value::String(s),
         Value::Array(arr) => {
-            serde_json::Value::Array(arr.into_iter().map(|v| to_json_value_single(v)).collect())
+            serde_json::Value::Array(arr.into_iter().map(to_json_value_single).collect())
         }
         Value::Table(table) => to_json_value(table),
     }
@@ -125,9 +125,9 @@ mod test {
 
         #[test]
         fn test_from_float() {
-            let json_value = serde_json::Value::Number(serde_json::Number::from_f64(3.14).unwrap());
+            let json_value = serde_json::Value::Number(serde_json::Number::from_f64(3.1).unwrap());
             let parsed_value = from_json_value(&json_value);
-            assert_eq!(parsed_value, Value::Float(3.14));
+            assert_eq!(parsed_value, Value::Float(3.1));
         }
 
         #[test]
@@ -201,11 +201,11 @@ mod test {
 
         #[test]
         fn test_float_to_json_value_single() {
-            let value = Value::Float(3.14);
+            let value = Value::Float(3.1);
             let json_value = to_json_value_single(value);
             assert_eq!(
                 json_value,
-                serde_json::Value::Number(serde_json::Number::from_f64(3.14).unwrap())
+                serde_json::Value::Number(serde_json::Number::from_f64(3.1).unwrap())
             );
         }
 

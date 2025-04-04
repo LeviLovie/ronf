@@ -87,16 +87,16 @@ impl File {
                 }
 
                 #[cfg(not(feature = "ini"))]
-                return Err("INI format feature is not enabled".to_string());
+                Err("INI format feature is not enabled".to_string())
             }
             FileFormat::Json => {
                 #[cfg(feature = "json")]
                 {
-                    return crate::format::json::deserialize(self.content.clone());
+                    crate::format::json::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "json"))]
-                return Err("JSON format feature is not enabled".to_string());
+                Err("JSON format feature is not enabled".to_string())
             }
             FileFormat::Yaml => {
                 #[cfg(feature = "yaml")]
@@ -105,7 +105,7 @@ impl File {
                 }
 
                 #[cfg(not(feature = "yaml"))]
-                return Err("YAML format feature is not enabled".to_string());
+                Err("YAML format feature is not enabled".to_string())
             }
             FileFormat::Toml => {
                 #[cfg(feature = "toml")]
@@ -114,7 +114,7 @@ impl File {
                 }
 
                 #[cfg(not(feature = "toml"))]
-                return Err("TOML format feature is not enabled".to_string());
+                Err("TOML format feature is not enabled".to_string())
             }
         }
     }

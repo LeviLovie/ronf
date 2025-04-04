@@ -32,7 +32,7 @@ impl ConfigBuilder {
         Ok(config)
     }
 
-    pub fn add(mut self, file: File) -> Self {
+    pub fn add_file(mut self, file: File) -> Self {
         self.files.push(file);
         self
     }
@@ -48,11 +48,9 @@ impl ConfigBuilder {
 /// Simple example:
 /// ```rust
 /// use ronf::prelude::{Config, File, FileFormat};
-/// fn main() {
-///     let config = Config::builder().add(File::new_str("test_file", FileFormat::Json, "{\"key\":
-///     \"value\"}")).build().unwrap();
-///     println!("\"key\": {}", config.get("key").unwrap());
-/// }
+/// let config = Config::builder().add_file(File::new_str("test_file", FileFormat::Json, "{\"key\":
+/// \"value\"}")).build().unwrap();
+/// println!("\"key\": {}", config.get("key").unwrap());
 /// ```
 pub struct Config {
     defaults: Map<String, Value>,
@@ -91,16 +89,16 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
             }
 
             #[cfg(not(feature = "ini"))]
-            return Err("INI format feature is not enabled".to_string());
+            Err("INI format feature is not enabled".to_string())
         }
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                return Ok(crate::format::json::serialize(map.clone()));
+                Ok(crate::format::json::serialize(map.clone()))
             }
 
             #[cfg(not(feature = "json"))]
-            return Err("JSON format feature is not enabled".to_string());
+            Err("JSON format feature is not enabled".to_string())
         }
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
@@ -109,7 +107,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
             }
 
             #[cfg(not(feature = "yaml"))]
-            return Err("YAML format feature is not enabled".to_string());
+            Err("YAML format feature is not enabled".to_string())
         }
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
@@ -118,7 +116,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
             }
 
             #[cfg(not(feature = "toml"))]
-            return Err("TOML format feature is not enabled".to_string());
+            Err("TOML format feature is not enabled".to_string())
         }
     }
 }
@@ -132,16 +130,16 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
             }
 
             #[cfg(not(feature = "ini"))]
-            return Err("INI format feature is not enabled".to_string());
+            Err("INI format feature is not enabled".to_string())
         }
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                return crate::format::json::deserialize(save.clone());
+                crate::format::json::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "json"))]
-            return Err("JSON format feature is not enabled".to_string());
+            Err("JSON format feature is not enabled".to_string())
         }
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
@@ -150,7 +148,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
             }
 
             #[cfg(not(feature = "yaml"))]
-            return Err("YAML format feature is not enabled".to_string());
+            Err("YAML format feature is not enabled".to_string())
         }
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
@@ -159,7 +157,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
             }
 
             #[cfg(not(feature = "toml"))]
-            return Err("TOML format feature is not enabled".to_string());
+            Err("TOML format feature is not enabled".to_string())
         }
     }
 }
