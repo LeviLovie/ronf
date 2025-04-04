@@ -19,10 +19,8 @@ fn from_json_value(value: &serde_json::Value) -> Value {
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 Value::Int(i)
-            } else if let Some(f) = n.as_f64() {
-                Value::Float(f)
             } else {
-                Value::String(n.to_string())
+                Value::Float(n.as_f64().unwrap_or(0.0))
             }
         }
         serde_json::Value::String(s) => Value::String(s.clone()),
@@ -75,6 +73,29 @@ fn to_json_value_single(value: Value) -> serde_json::Value {
 mod test {
     use super::*;
     use crate::value::Value;
+
+    #[test]
+    fn test_invalid() {
+        let json_string = r#"{"key": "value""#;
+        let result = deserialize(json_string.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_non_object_json() {
+        let test_cases = vec![
+            "42",        // Number
+            "true",      // Boolean
+            "\"hello\"", // String
+            "null",      // Null
+            "[]",        // Array
+        ];
+
+        for case in test_cases {
+            let parsed_map = deserialize(case.to_string()).unwrap();
+            assert!(parsed_map.is_empty());
+        }
+    }
 
     #[test]
     fn test_deserialize() {

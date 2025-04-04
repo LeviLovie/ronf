@@ -35,10 +35,8 @@ fn from_yaml_value(value: &yaml_rust2::Yaml) -> Value {
         yaml_rust2::Yaml::Real(n) => {
             if let Ok(i) = n.parse::<i64>() {
                 Value::Int(i)
-            } else if let Ok(f) = n.parse::<f64>() {
-                Value::Float(f)
             } else {
-                Value::String(n.clone())
+                Value::Float(n.parse::<f64>().unwrap_or(0.0))
             }
         }
         yaml_rust2::Yaml::String(s) => Value::String(s.clone()),
@@ -59,12 +57,7 @@ fn from_yaml_value(value: &yaml_rust2::Yaml) -> Value {
             }
             Value::Table(table)
         }
-        yaml_rust2::Yaml::Alias(_) => {
-            unimplemented!()
-        }
-        yaml_rust2::Yaml::BadValue => {
-            unimplemented!()
-        }
+        _ => Value::None,
     }
 }
 
@@ -103,6 +96,58 @@ fn to_yaml_value_single(value: Value) -> yaml_rust2::Yaml {
 mod test {
     use super::*;
     use crate::value::Value;
+
+    #[test]
+    fn test_valid_yaml() {
+        let input = "key: value";
+        let result = deserialize(input.to_string());
+        assert!(result.is_ok());
+        let map = result.unwrap();
+        assert_eq!(map.get("key").unwrap(), &Value::String("value".to_string()));
+    }
+
+    #[test]
+    fn test_empty_input() {
+        let input = "";
+        let result = deserialize(input.to_string());
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_malformed_yaml() {
+        let input = "key: : value"; // Invalid syntax
+        let result = deserialize(input.to_string());
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Failed to parse YAML"));
+    }
+
+    #[test]
+    fn test_multiple_documents() {
+        let input = "---\nkey: value\n---\nanother: doc";
+        let result = deserialize(input.to_string());
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Expected a single YAML document")
+        );
+    }
+
+    #[test]
+    fn test_single_empty_document() {
+        let input = "---"; // A single empty document
+        let result = deserialize(input.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_non_string_keys() {
+        let input = "123: value";
+        let result = deserialize(input.to_string());
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "YAML keys must be strings");
+    }
 
     #[test]
     fn test_deserialize() {
@@ -184,6 +229,9 @@ array:
             let yaml_value = yaml_rust2::Yaml::Real("3.1".to_string());
             let parsed_value = from_yaml_value(&yaml_value);
             assert_eq!(parsed_value, Value::Float(3.1));
+            let yaml_value = yaml_rust2::Yaml::Real("42".to_string());
+            let parsed_value = from_yaml_value(&yaml_value);
+            assert_eq!(parsed_value, Value::Int(42));
         }
 
         #[test]
@@ -225,6 +273,13 @@ array:
                     Value::String("value".to_string())
                 )]))
             );
+        }
+
+        #[test]
+        fn test_from_bad_value() {
+            let yaml_value = yaml_rust2::Yaml::BadValue;
+            let parsed_value = from_yaml_value(&yaml_value);
+            assert_eq!(parsed_value, Value::None);
         }
     }
 

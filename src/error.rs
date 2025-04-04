@@ -18,3 +18,14 @@ impl std::fmt::Display for CannotConvert {
         write!(f, "Cannot convert {} to {}", self.from, self.to)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_cannot_convert_display() {
+        let error = CannotConvert::new("String", "Int");
+        assert_eq!(error.to_string(), "Cannot convert String to Int");
+    }
+}

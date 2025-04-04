@@ -1,13 +1,15 @@
 use ronf::prelude::{Config, File, FileFormat};
 
 fn main() {
+    unsafe {
+        std::env::set_var("KEY", "overwrite");
+    }
+
     let config = Config::builder()
         .add_file(File::new_str(
             "test_file",
-            FileFormat::Ron,
-            r#"(
-                key: "value",
-            )"#,
+            FileFormat::Json,
+            "{\"key\": \"value\"}",
         ))
         .build()
         .unwrap();

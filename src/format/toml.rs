@@ -70,6 +70,13 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_invalid() {
+        let toml_content = r#"[section"#;
+        let result = deserialize(toml_content.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_deserialize() {
         let toml_content = r#"
             key = "value"
@@ -91,14 +98,11 @@ mod test {
             parsed_map.get("array_key").unwrap(),
             &Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
         );
-        if let Value::Table(table) = parsed_map.get("table_key").unwrap() {
-            assert_eq!(
-                table.get("nested_key").unwrap(),
-                &Value::String("nested_value".to_string())
-            );
-        } else {
-            panic!("Expected a table for 'table_key'");
-        }
+        let table = parsed_map.get("table_key").unwrap();
+        assert_eq!(
+            table.get("nested_key").unwrap(),
+            &Value::String("nested_value".to_string())
+        );
     }
 
     #[test]
@@ -107,17 +111,15 @@ mod test {
             [section]
             key = "value"
             int_key = 42
+            date = 2023-10-01T12:00:00Z
             "#;
         let parsed_map = deserialize(toml_content.to_string()).unwrap();
-        if let Value::Table(table) = parsed_map.get("section").unwrap() {
-            assert_eq!(
-                table.get("key").unwrap(),
-                &Value::String("value".to_string())
-            );
-            assert_eq!(table.get("int_key").unwrap(), &Value::Int(42));
-        } else {
-            panic!("Expected a table for 'section'");
-        }
+        let table = parsed_map.get("section").unwrap();
+        assert_eq!(
+            table.get("key").unwrap(),
+            &Value::String("value".to_string())
+        );
+        assert_eq!(table.get("int_key").unwrap(), &Value::Int(42));
     }
 
     #[test]
@@ -172,7 +174,7 @@ mod test {
         fn test_from_toml_table() {
             let toml_value = toml::Value::Table(toml::Table::new());
             let parsed_value = from_toml_value(&toml_value);
-            assert!(matches!(parsed_value, Value::Table(_)));
+            assert_eq!(parsed_value, Value::Table(Map::new()));
         }
 
         #[test]
@@ -228,12 +230,14 @@ mod test {
         }
 
         #[test]
-        fn test_to_toml_table() {
-            let mut table = Map::new();
-            table.insert("key".to_string(), Value::String("value".to_string()));
-            let value = Value::Table(table);
+        fn test_to_table() {
+            let mut map = Map::new();
+            map.insert("key".to_string(), Value::String("value".to_string()));
+            let value = Value::Table(map);
             let toml_value = to_toml_value(value);
-            assert!(matches!(toml_value, toml::Value::Table(_)));
+            let mut expected_table = toml::Table::new();
+            expected_table.insert("key".to_string(), toml::Value::String("value".to_string()));
+            assert_eq!(toml_value, toml::Value::Table(expected_table));
         }
 
         #[test]
