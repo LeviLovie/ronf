@@ -47,10 +47,13 @@ impl ConfigBuilder {
 ///
 /// Simple example:
 /// ```rust
+/// #[cfg(features = "json")]
+/// {
 /// use ronf::prelude::{Config, File, FileFormat};
 /// let config = Config::builder().add_file(File::new_str("test_file", FileFormat::Json, "{\"key\":
 /// \"value\"}")).build().unwrap();
 /// println!("\"key\": {}", config.get("key").unwrap());
+/// }
 /// ```
 pub struct Config {
     defaults: Map<String, Value>,
@@ -84,7 +87,7 @@ impl Config {
     }
 }
 
-fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
+fn save_map(_map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
     match format {
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
@@ -98,7 +101,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                Ok(crate::format::json::serialize(map.clone()))
+                Ok(crate::format::json::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "json"))]
@@ -107,7 +110,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                Ok(crate::format::yaml::serialize(map.clone()))
+                Ok(crate::format::yaml::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -116,7 +119,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                Ok(crate::format::toml::serialize(map.clone()))
+                Ok(crate::format::toml::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "toml"))]
@@ -125,7 +128,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Ron => {
             #[cfg(feature = "ron")]
             {
-                Ok(crate::format::ron::serialize(map.clone()))
+                Ok(crate::format::ron::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "ron"))]
@@ -134,12 +137,12 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
     }
 }
 
-fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
+fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
     match format {
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                crate::format::ini::deserialize(save.clone())
+                crate::format::ini::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "ini"))]
@@ -148,7 +151,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                crate::format::json::deserialize(save.clone())
+                crate::format::json::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "json"))]
@@ -157,7 +160,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                crate::format::yaml::deserialize(save.clone())
+                crate::format::yaml::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -166,7 +169,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                crate::format::toml::deserialize(save.clone())
+                crate::format::toml::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "toml"))]
@@ -175,7 +178,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Ron => {
             #[cfg(feature = "ron")]
             {
-                crate::format::ron::deserialize(save.clone())
+                crate::format::ron::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "ron"))]

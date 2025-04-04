@@ -148,6 +148,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_parse_json() {
         let path = "test.json".to_string();
         let format = FileFormat::Json;
