@@ -1,0 +1,28 @@
+[package]
+name = "ronf"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Configuration system with saving"
+repository = "https://github.com/LeviLovie/ronf"
+homepage = "https://github.com/LeviLovie/ronf"
+
+[dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
+
+indexmap = { version = "2.8.0", optional = true }
+serde_json = { version = "1.0.140", optional = true }
+
+[dev-dependencies]
+serde_json = "1.0.140"
+
+[features]
+default = ["ordered", "read_file", "json"]
+ordered = ["dep:indexmap"]
+load_after_build = []
+read_file = []
+env = []
+ini = []
+json = ["dep:serde_json"]
+yaml = []
+toml = []

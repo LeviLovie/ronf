@@ -1,0 +1,165 @@
+use crate::file::{File, FileFormat};
+use crate::value::{Map, Value};
+
+pub struct ConfigBuilder {
+    pub files: Vec<File>,
+    pub changes: Map<String, Value>,
+}
+
+impl ConfigBuilder {
+    pub fn build(self) -> Result<Config, String> {
+        let mut config = Config {
+            defaults: Map::new(),
+            changes: Map::new(),
+            values: Map::new(),
+        };
+
+        for file in self.files {
+            let parsed = file
+                .parse()
+                .map_err(|e| format!("Failed to parse file {}: {}", file.path, e))?;
+            config.defaults.extend(parsed);
+        }
+
+        config.values = config.defaults.clone();
+
+        for (key, value) in self.changes.iter() {
+            if config.values.get(key).is_some() {
+                config.values.insert(key.clone(), value.clone());
+            }
+        }
+
+        Ok(config)
+    }
+
+    pub fn add(mut self, file: File) -> Self {
+        self.files.push(file);
+        self
+    }
+
+    pub fn load(mut self, save: String, format: FileFormat) -> Result<Self, String> {
+        self.changes = load_map(save, format)?;
+        Ok(self)
+    }
+}
+
+/// Configuration structure to hold parsed values
+///
+/// Simple example:
+/// ```rust
+/// use ronf::prelude::{Config, File, FileFormat};
+/// fn main() {
+///     let config = Config::builder().add(File::new_str("test_file", FileFormat::Json, "{\"key\":
+///     \"value\"}")).build().unwrap();
+///     println!("\"key\": {}", config.get("key").unwrap());
+/// }
+/// ```
+pub struct Config {
+    defaults: Map<String, Value>,
+    changes: Map<String, Value>,
+    values: Map<String, Value>,
+}
+
+impl Config {
+    pub fn builder() -> ConfigBuilder {
+        ConfigBuilder {
+            files: Vec::new(),
+            changes: Map::new(),
+        }
+    }
+
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        self.values.get(key)
+    }
+
+    pub fn set(&mut self, key: &str, value: Value) {
+        self.changes.insert(key.to_string(), value.clone());
+        self.values.insert(key.to_string(), value);
+    }
+
+    pub fn save(&self, format: FileFormat) -> Result<String, String> {
+        save_map(&self.changes, format)
+    }
+}
+
+fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
+    match format {
+        FileFormat::Ini => {
+            #[cfg(feature = "ini")]
+            {
+                unimplemented!("Saving INI file");
+            }
+
+            #[cfg(not(feature = "ini"))]
+            return Err("INI format feature is not enabled".to_string());
+        }
+        FileFormat::Json => {
+            #[cfg(feature = "json")]
+            {
+                return Ok(crate::format::json::serialize(map.clone()));
+            }
+
+            #[cfg(not(feature = "json"))]
+            return Err("JSON format feature is not enabled".to_string());
+        }
+        FileFormat::Yaml => {
+            #[cfg(feature = "yaml")]
+            {
+                unimplemented!("Saving YAML file");
+            }
+
+            #[cfg(not(feature = "yaml"))]
+            return Err("YAML format feature is not enabled".to_string());
+        }
+        FileFormat::Toml => {
+            #[cfg(feature = "toml")]
+            {
+                unimplemented!("Saving TOML file");
+            }
+
+            #[cfg(not(feature = "toml"))]
+            return Err("TOML format feature is not enabled".to_string());
+        }
+    }
+}
+
+fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
+    match format {
+        FileFormat::Ini => {
+            #[cfg(feature = "ini")]
+            {
+                unimplemented!("Loading INI file");
+            }
+
+            #[cfg(not(feature = "ini"))]
+            return Err("INI format feature is not enabled".to_string());
+        }
+        FileFormat::Json => {
+            #[cfg(feature = "json")]
+            {
+                return crate::format::json::deserialize(save.clone());
+            }
+
+            #[cfg(not(feature = "json"))]
+            return Err("JSON format feature is not enabled".to_string());
+        }
+        FileFormat::Yaml => {
+            #[cfg(feature = "yaml")]
+            {
+                unimplemented!("Loading YAML file");
+            }
+
+            #[cfg(not(feature = "yaml"))]
+            return Err("YAML format feature is not enabled".to_string());
+        }
+        FileFormat::Toml => {
+            #[cfg(feature = "toml")]
+            {
+                unimplemented!("Loading TOML file");
+            }
+
+            #[cfg(not(feature = "toml"))]
+            return Err("TOML format feature is not enabled".to_string());
+        }
+    }
+}
