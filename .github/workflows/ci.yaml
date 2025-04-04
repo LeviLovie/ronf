@@ -181,8 +181,19 @@ jobs:
       - name: Gather coverage
         run: cargo llvm-cov --lcov --output-path coverage/lcov.info
 
+      - name: Generate coverage summary
+        run: cargo llvm-cov --summary-only --json > coverage/summary.json
+
+      - name: Extract coverage percentage
+        run: |
+          echo "$(jq '.data[0].totals.lines.pct' coverage/summary.json)" > coverage/coverage.txt
+
       - name: Upload coverage report
-        uses: codecov/codecov-action@v4
-        with:
-          files: coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout --orphan gh-pages
+          mv coverage/coverage.txt .
+          git add coverage.txt
+          git commit -m "Update coverage"
+          git push -f origin gh-pages
