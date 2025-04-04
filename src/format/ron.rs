@@ -158,9 +158,9 @@ mod test {
 
         #[test]
         fn test_from_float() {
-            let ron_value = ron::Value::Number(ron::Number::from(3.14));
+            let ron_value = ron::Value::Number(ron::Number::from(3.1));
             let value = from_ron_value(ron_value);
-            assert_eq!(value, Value::Float(3.14));
+            assert_eq!(value, Value::Float(3.1));
         }
 
         #[test]
