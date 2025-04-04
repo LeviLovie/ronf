@@ -2,6 +2,7 @@
 name = "ronf"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.86.0"
 license = "MIT"
 description = "Configuration system with saving"
 repository = "https://github.com/LeviLovie/ronf"

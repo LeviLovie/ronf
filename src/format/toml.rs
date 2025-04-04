@@ -74,7 +74,7 @@ mod test {
         let toml_content = r#"
             key = "value"
             int_key = 42
-            float_key = 3.14
+            float_key = 3.1
             bool_key = true
             array_key = [1, 2, 3]
             table_key = { nested_key = "nested_value" }
@@ -85,7 +85,7 @@ mod test {
             &Value::String("value".to_string())
         );
         assert_eq!(parsed_map.get("int_key").unwrap(), &Value::Int(42));
-        assert_eq!(parsed_map.get("float_key").unwrap(), &Value::Float(3.14));
+        assert_eq!(parsed_map.get("float_key").unwrap(), &Value::Float(3.1));
         assert_eq!(parsed_map.get("bool_key").unwrap(), &Value::Bool(true));
         assert_eq!(
             parsed_map.get("array_key").unwrap(),
@@ -125,12 +125,12 @@ mod test {
         let mut map = Map::new();
         map.insert("key".to_string(), Value::String("value".to_string()));
         map.insert("int_key".to_string(), Value::Int(42));
-        map.insert("float_key".to_string(), Value::Float(3.14));
+        map.insert("float_key".to_string(), Value::Float(3.1));
         map.insert("bool_key".to_string(), Value::Bool(true));
         let serialized = serialize(map);
         assert!(serialized.contains("key = \"value\""));
         assert!(serialized.contains("int_key = 42"));
-        assert!(serialized.contains("float_key = 3.14"));
+        assert!(serialized.contains("float_key = 3.1"));
         assert!(serialized.contains("bool_key = true"));
     }
 
@@ -191,9 +191,9 @@ mod test {
 
         #[test]
         fn test_from_toml_float() {
-            let toml_value = toml::Value::Float(3.14);
+            let toml_value = toml::Value::Float(3.1);
             let parsed_value = from_toml_value(&toml_value);
-            assert_eq!(parsed_value, Value::Float(3.14));
+            assert_eq!(parsed_value, Value::Float(3.1));
         }
 
         #[test]
@@ -252,9 +252,9 @@ mod test {
 
         #[test]
         fn test_to_toml_float() {
-            let value = Value::Float(3.14);
+            let value = Value::Float(3.1);
             let toml_value = to_toml_value(value);
-            assert_eq!(toml_value, toml::Value::Float(3.14));
+            assert_eq!(toml_value, toml::Value::Float(3.1));
         }
 
         #[test]
