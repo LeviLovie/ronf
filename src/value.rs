@@ -10,8 +10,7 @@ pub(crate) type Map<K, V> = std::collections::HashMap<K, V>;
 pub(crate) type Array = Vec<Value>;
 pub(crate) type Table = Map<String, Value>;
 
-#[derive(Debug, Clone, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum Value {
     #[default]
     None,
@@ -29,6 +28,13 @@ impl Value {
         V: Into<Value>,
     {
         value.into()
+    }
+
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        match self {
+            Value::Table(table) => table.get(key),
+            _ => None,
+        }
     }
 }
 
@@ -638,7 +644,6 @@ impl<'de> serde::de::MapAccess<'de> for TableDeserializer {
     }
 }
 
-
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -788,8 +793,9 @@ impl TryInto<bool> for Value {
     }
 }
 
-impl From<Map<String, Value>> for Value {
-    fn from(value: Map<String, Value>) -> Self {
+#[cfg(feature = "ordered")]
+impl From<indexmap::IndexMap<String, Value>> for Value {
+    fn from(value: indexmap::IndexMap<String, Value>) -> Self {
         Value::Table(value)
     }
 }
@@ -797,9 +803,7 @@ impl From<Map<String, Value>> for Value {
 impl From<std::collections::HashMap<std::string::String, Value>> for Value {
     fn from(value: std::collections::HashMap<std::string::String, Value>) -> Self {
         #[cfg(feature = "ordered")]
-        let value = value
-            .into_iter()
-            .collect::<Map<String, Value>>();
+        let value = value.into_iter().collect::<Map<String, Value>>();
         Value::Table(value)
     }
 }

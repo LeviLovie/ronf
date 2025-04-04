@@ -47,10 +47,13 @@ impl ConfigBuilder {
 ///
 /// Simple example:
 /// ```rust
+/// #[cfg(features = "json")]
+/// {
 /// use ronf::prelude::{Config, File, FileFormat};
 /// let config = Config::builder().add_file(File::new_str("test_file", FileFormat::Json, "{\"key\":
 /// \"value\"}")).build().unwrap();
 /// println!("\"key\": {}", config.get("key").unwrap());
+/// }
 /// ```
 pub struct Config {
     defaults: Map<String, Value>,
@@ -75,17 +78,21 @@ impl Config {
         self.values.insert(key.to_string(), value);
     }
 
+    pub fn list(&self) -> Vec<String> {
+        self.values.iter().map(|(key, _)| key.clone()).collect()
+    }
+
     pub fn save(&self, format: FileFormat) -> Result<String, String> {
         save_map(&self.changes, format)
     }
 }
 
-fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
+fn save_map(_map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
     match format {
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                unimplemented!("Saving INI file");
+                Err("Serializing INI format is not supported".to_string())
             }
 
             #[cfg(not(feature = "ini"))]
@@ -94,7 +101,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                Ok(crate::format::json::serialize(map.clone()))
+                Ok(crate::format::json::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "json"))]
@@ -103,7 +110,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                unimplemented!("Saving YAML file");
+                Ok(crate::format::yaml::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -112,21 +119,30 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                unimplemented!("Saving TOML file");
+                Ok(crate::format::toml::serialize(_map.clone()))
             }
 
             #[cfg(not(feature = "toml"))]
             Err("TOML format feature is not enabled".to_string())
+        }
+        FileFormat::Ron => {
+            #[cfg(feature = "ron")]
+            {
+                Ok(crate::format::ron::serialize(_map.clone()))
+            }
+
+            #[cfg(not(feature = "ron"))]
+            Err("RON format feature is not enabled".to_string())
         }
     }
 }
 
-fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
+fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
     match format {
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                unimplemented!("Loading INI file");
+                crate::format::ini::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "ini"))]
@@ -135,7 +151,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                crate::format::json::deserialize(save.clone())
+                crate::format::json::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "json"))]
@@ -144,7 +160,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                unimplemented!("Loading YAML file");
+                crate::format::yaml::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -153,11 +169,20 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                unimplemented!("Loading TOML file");
+                crate::format::toml::deserialize(_save.clone())
             }
 
             #[cfg(not(feature = "toml"))]
             Err("TOML format feature is not enabled".to_string())
+        }
+        FileFormat::Ron => {
+            #[cfg(feature = "ron")]
+            {
+                crate::format::ron::deserialize(_save.clone())
+            }
+
+            #[cfg(not(feature = "ron"))]
+            Err("RON format feature is not enabled".to_string())
         }
     }
 }

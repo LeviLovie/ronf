@@ -27,7 +27,7 @@ For more examples, check `examples/`. Run with `cargo run --example FILE_NAME`.
 - `ordered` - Uses HashMap from `indexmap` instead of `std::collections` to preserve order of arrays;
 - `load_after_build` - Enables loading saves on `Config` (After building with `ConfigBuilder::build()`);
 - `read_file` - Add functions to read `File` from path;
-- `env` - Adds `.env()` on `ConfigBuilder` to overwrite keys with evn vars.
+- `env` - Adds `.env()` on `ConfigBuilder` to overwrite keys with env vars.
 
 ### File formats
 

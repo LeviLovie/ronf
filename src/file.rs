@@ -6,6 +6,7 @@ pub enum FileFormat {
     Json,
     Yaml,
     Toml,
+    Ron,
 }
 
 impl FileFormat {
@@ -15,6 +16,7 @@ impl FileFormat {
             "json" => Some(FileFormat::Json),
             "yaml" => Some(FileFormat::Yaml),
             "toml" => Some(FileFormat::Toml),
+            "ron" => Some(FileFormat::Ron),
             _ => None,
         }
     }
@@ -27,6 +29,7 @@ impl std::fmt::Display for FileFormat {
             FileFormat::Json => write!(f, "json"),
             FileFormat::Yaml => write!(f, "yaml"),
             FileFormat::Toml => write!(f, "toml"),
+            FileFormat::Ron => write!(f, "ron"),
         }
     }
 }
@@ -62,7 +65,7 @@ impl File {
 
         let extension = path
             .split('.')
-            .last()
+            .next_back()
             .ok_or_else(|| format!("Failed to get file extension from {}", path))?;
         let format = FileFormat::from_extension(extension)
             .ok_or_else(|| format!("Unsupported file extension: {}", extension))?;
@@ -83,7 +86,7 @@ impl File {
             FileFormat::Ini => {
                 #[cfg(feature = "ini")]
                 {
-                    unimplemented!("Parsing INI file: {}", self.path);
+                    crate::format::ini::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "ini"))]
@@ -101,7 +104,7 @@ impl File {
             FileFormat::Yaml => {
                 #[cfg(feature = "yaml")]
                 {
-                    unimplemented!("Parsing YAML file: {}", self.path);
+                    crate::format::yaml::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "yaml"))]
@@ -110,11 +113,20 @@ impl File {
             FileFormat::Toml => {
                 #[cfg(feature = "toml")]
                 {
-                    unimplemented!("Parsing TOML file: {}", self.path);
+                    crate::format::toml::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "toml"))]
                 Err("TOML format feature is not enabled".to_string())
+            }
+            FileFormat::Ron => {
+                #[cfg(feature = "ron")]
+                {
+                    crate::format::ron::deserialize(self.content.clone())
+                }
+
+                #[cfg(not(feature = "ron"))]
+                Err("RON format feature is not enabled".to_string())
             }
         }
     }
@@ -136,6 +148,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "json")]
     fn test_parse_json() {
         let path = "test.json".to_string();
         let format = FileFormat::Json;
