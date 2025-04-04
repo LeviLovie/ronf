@@ -103,7 +103,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                unimplemented!("Saving YAML file");
+                Ok(crate::format::yaml::serialize(map.clone()))
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -144,7 +144,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                unimplemented!("Loading YAML file");
+                crate::format::yaml::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "yaml"))]

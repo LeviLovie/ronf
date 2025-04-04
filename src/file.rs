@@ -101,7 +101,7 @@ impl File {
             FileFormat::Yaml => {
                 #[cfg(feature = "yaml")]
                 {
-                    unimplemented!("Parsing YAML file: {}", self.path);
+                    crate::format::yaml::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "yaml"))]

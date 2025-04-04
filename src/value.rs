@@ -10,8 +10,7 @@ pub(crate) type Map<K, V> = std::collections::HashMap<K, V>;
 pub(crate) type Array = Vec<Value>;
 pub(crate) type Table = Map<String, Value>;
 
-#[derive(Debug, Clone, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum Value {
     #[default]
     None,
@@ -638,7 +637,6 @@ impl<'de> serde::de::MapAccess<'de> for TableDeserializer {
     }
 }
 
-
 impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -797,9 +795,7 @@ impl From<Map<String, Value>> for Value {
 impl From<std::collections::HashMap<std::string::String, Value>> for Value {
     fn from(value: std::collections::HashMap<std::string::String, Value>) -> Self {
         #[cfg(feature = "ordered")]
-        let value = value
-            .into_iter()
-            .collect::<Map<String, Value>>();
+        let value = value.into_iter().collect::<Map<String, Value>>();
         Value::Table(value)
     }
 }
