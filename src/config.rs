@@ -75,6 +75,10 @@ impl Config {
         self.values.insert(key.to_string(), value);
     }
 
+    pub fn list(&self) -> Vec<String> {
+        self.values.iter().map(|(key, _)| key.clone()).collect()
+    }
+
     pub fn save(&self, format: FileFormat) -> Result<String, String> {
         save_map(&self.changes, format)
     }
@@ -85,7 +89,7 @@ fn save_map(map: &Map<String, Value>, format: FileFormat) -> Result<String, Stri
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                unimplemented!("Saving INI file");
+                Err("Serializing INI format is not supported".to_string())
             }
 
             #[cfg(not(feature = "ini"))]
@@ -126,7 +130,7 @@ fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, Stri
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                unimplemented!("Loading INI file");
+                crate::format::ini::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "ini"))]

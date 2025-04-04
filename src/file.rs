@@ -83,7 +83,7 @@ impl File {
             FileFormat::Ini => {
                 #[cfg(feature = "ini")]
                 {
-                    unimplemented!("Parsing INI file: {}", self.path);
+                    crate::format::ini::deserialize(self.content.clone())
                 }
 
                 #[cfg(not(feature = "ini"))]

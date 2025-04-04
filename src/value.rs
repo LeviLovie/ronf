@@ -29,6 +29,13 @@ impl Value {
     {
         value.into()
     }
+
+    pub fn get(&self, key: &str) -> Option<&Value> {
+        match self {
+            Value::Table(table) => table.get(key),
+            _ => None,
+        }
+    }
 }
 
 struct ValueDeserializer {
