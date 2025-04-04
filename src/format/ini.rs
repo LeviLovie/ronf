@@ -31,6 +31,30 @@ mod test {
     use crate::value::Value;
 
     #[test]
+    fn test_invalid() {
+        let ini_content = r#"[section"#;
+        let result = deserialize(ini_content.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_global_section() {
+        let ini_content = r#"
+key1 = "value1"
+key2 = "value2"
+"#;
+        let parsed_map = deserialize(ini_content.to_string()).unwrap();
+
+        assert_eq!(
+            parsed_map,
+            Map::from_iter(vec![
+                ("key1".to_string(), Value::String("value1".to_string())),
+                ("key2".to_string(), Value::String("value2".to_string()))
+            ])
+        );
+    }
+
+    #[test]
     fn test_deserialize() {
         let ini_content = r#"
 [section]

@@ -6,14 +6,11 @@ pub(crate) fn deserialize(content: String) -> Result<Map<String, Value>, String>
     match parsed_value {
         ron::Value::Map(m) => {
             for (key, value) in m {
-                let key = match key {
-                    ron::Value::Char(c) => c.to_string(),
-                    ron::Value::String(s) => s,
-                    ron::Value::Bytes(b) => String::from_utf8_lossy(&b).to_string(),
-                    ron::Value::Number(n) => n.into_f64().to_string(),
-                    _ => panic!("Invalid key type in RON map"),
-                };
-                map.insert(key, from_ron_value(value));
+                let mut new_key = String::new();
+                if let ron::Value::String(s) = key {
+                    new_key = s;
+                }
+                map.insert(new_key, from_ron_value(value));
             }
         }
         _ => panic!("Expected a RON map"),
@@ -49,14 +46,11 @@ fn from_ron_value(value: ron::Value) -> Value {
         ron::Value::Map(map) => {
             let mut new_map = Map::new();
             for (key, value) in map {
-                let key = match key {
-                    ron::Value::Char(c) => c.to_string(),
-                    ron::Value::String(s) => s,
-                    ron::Value::Bytes(b) => String::from_utf8_lossy(&b).to_string(),
-                    ron::Value::Number(n) => n.into_f64().to_string(),
-                    _ => panic!("Invalid key type in RON map"),
-                };
-                new_map.insert(key, from_ron_value(value));
+                let mut new_key = String::new();
+                if let ron::Value::String(s) = key {
+                    new_key = s;
+                }
+                new_map.insert(new_key, from_ron_value(value));
             }
             Value::Table(new_map)
         }
@@ -75,7 +69,13 @@ pub(crate) fn serialize(value: Map<String, Value>) -> String {
 fn to_ron_value(value: Value) -> ron::Value {
     match value {
         Value::String(s) => ron::Value::String(s),
-        Value::Int(i) => ron::Value::Number(ron::Number::from(i)),
+        Value::Int(i) => {
+            if let Some(i32_value) = i.try_into().ok() {
+                ron::Value::Number(ron::Number::I32(i32_value))
+            } else {
+                ron::Value::Number(ron::Number::I64(i))
+            }
+        }
         Value::Float(f) => ron::Value::Number(ron::Number::from(f)),
         Value::Bool(b) => ron::Value::Bool(b),
         Value::Array(arr) => {
@@ -100,6 +100,20 @@ fn to_ron_value(value: Value) -> ron::Value {
 mod test {
     use super::*;
     use crate::value::Value;
+
+    #[test]
+    fn test_invalid() {
+        let ron_content = r#"[section"#;
+        let result = deserialize(ron_content.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_expected_ron_map() {
+        let non_map_ron = r#""string_value""#; // Not a map, should panic
+        let _result = deserialize(non_map_ron.to_string());
+    }
 
     #[test]
     fn test_serialize() {
@@ -143,6 +157,13 @@ mod test {
         }
 
         #[test]
+        fn test_from_char() {
+            let ron_value = ron::Value::Char('c');
+            let value = from_ron_value(ron_value);
+            assert_eq!(value, Value::String("c".to_string()));
+        }
+
+        #[test]
         fn test_from_string() {
             let ron_value = ron::Value::String("value".to_string());
             let value = from_ron_value(ron_value);
@@ -181,6 +202,13 @@ mod test {
                 value,
                 Value::Array(vec![Value::Int(1), Value::String("two".to_string())])
             );
+        }
+
+        #[test]
+        fn test_from_bytes() {
+            let ron_value = ron::Value::Bytes(vec![1, 2, 3]);
+            let value = from_ron_value(ron_value);
+            assert_eq!(value, Value::String("\u{1}\u{2}\u{3}".to_string()));
         }
 
         #[test]
@@ -233,6 +261,32 @@ mod test {
         }
 
         #[test]
+        fn test_float_to_ron_value() {
+            let value = Value::Float(3.1);
+            let ron_value = to_ron_value(value);
+            assert_eq!(ron_value, ron::Value::Number(ron::Number::from(3.1)));
+        }
+
+        #[test]
+        fn test_array_to_ron_value() {
+            let value = Value::Array(vec![Value::Int(1), Value::String("two".to_string())]);
+            let ron_value = to_ron_value(value);
+            assert_eq!(
+                ron_value,
+                ron::Value::Seq(vec![
+                    ron::Value::Number(ron::Number::from(1)),
+                    ron::Value::String("two".to_string())
+                ])
+            );
+        }
+
+        #[test]
+        fn test_i64_to_ron_value() {
+            let value = Value::Int(4200000000);
+            let _ron_value = to_ron_value(value);
+        }
+
+        #[test]
         fn test_table_to_ron_value() {
             let value = Value::Table(Map::from_iter(vec![(
                 "key".to_string(),
@@ -246,6 +300,15 @@ mod test {
                     ron::Value::String("value".to_string())
                 )]))
             );
+        }
+
+        #[test]
+        fn test_unsupported_value() {
+            let value = Value::None;
+            let result = std::panic::catch_unwind(|| {
+                to_ron_value(value);
+            });
+            assert!(result.is_err());
         }
     }
 }
