@@ -61,8 +61,8 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn load(mut self, save: String, format: FileFormat) -> Result<Self, String> {
-        self.changes = load_map(save, format)?;
+    pub fn load(mut self, file: File) -> Result<Self, String> {
+        self.changes = load_map(file.content, file.format)?;
         Ok(self)
     }
 }
@@ -113,6 +113,21 @@ impl Config {
 
     pub fn list(&self) -> Vec<String> {
         self.values.iter().map(|(key, _)| key.clone()).collect()
+    }
+
+    #[cfg(feature = "load_after_build")]
+    pub fn load(&mut self, file: File) -> Result<(), String> {
+        let parsed = file
+            .parse()
+            .map_err(|e| format!("Failed to parse file {}: {}", file.path, e))?;
+        self.changes.extend(parsed);
+        self.values = self.defaults.clone();
+        for (key, value) in self.changes.iter() {
+            if self.values.get(key).is_some() {
+                self.values.insert(key.clone(), value.clone());
+            }
+        }
+        Ok(())
     }
 
     pub fn save(&self, format: FileFormat) -> Result<String, String> {

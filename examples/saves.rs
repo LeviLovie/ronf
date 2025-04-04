@@ -15,7 +15,7 @@ fn main() {
 
     let loaded_config = Config::builder()
         .add_file(default_file.clone())
-        .load(save, FileFormat::Json)
+        .load(File::new("save.json".to_string(), FileFormat::Json, save))
         .unwrap()
         .build()
         .unwrap();
