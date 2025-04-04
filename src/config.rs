@@ -185,12 +185,16 @@ fn save_map(_map: &Map<String, Value>, format: FileFormat) -> Result<String, Str
     }
 }
 
-fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
+fn load_map(save: String, format: FileFormat) -> Result<Map<String, Value>, String> {
+    if save.is_empty() {
+        return Err("Empty content".to_string());
+    }
+
     match format {
         FileFormat::Ini => {
             #[cfg(feature = "ini")]
             {
-                crate::format::ini::deserialize(_save.clone())
+                crate::format::ini::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "ini"))]
@@ -199,7 +203,7 @@ fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, Str
         FileFormat::Json => {
             #[cfg(feature = "json")]
             {
-                crate::format::json::deserialize(_save.clone())
+                crate::format::json::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "json"))]
@@ -208,7 +212,7 @@ fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, Str
         FileFormat::Yaml => {
             #[cfg(feature = "yaml")]
             {
-                crate::format::yaml::deserialize(_save.clone())
+                crate::format::yaml::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "yaml"))]
@@ -217,7 +221,7 @@ fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, Str
         FileFormat::Toml => {
             #[cfg(feature = "toml")]
             {
-                crate::format::toml::deserialize(_save.clone())
+                crate::format::toml::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "toml"))]
@@ -226,11 +230,319 @@ fn load_map(_save: String, format: FileFormat) -> Result<Map<String, Value>, Str
         FileFormat::Ron => {
             #[cfg(feature = "ron")]
             {
-                crate::format::ron::deserialize(_save.clone())
+                crate::format::ron::deserialize(save.clone())
             }
 
             #[cfg(not(feature = "ron"))]
             Err("RON format feature is not enabled".to_string())
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_config_builder() {
+        let _config = Config::builder();
+    }
+
+    #[test]
+    fn test_config_get() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("value".to_string())
+        );
+    }
+
+    #[test]
+    fn test_config_set() {
+        let mut config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        config.set("key", Value::String("new_value".to_string()));
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("new_value".to_string())
+        );
+    }
+
+    #[test]
+    fn test_config_list() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        assert_eq!(config.list(), vec!["key".to_string()]);
+    }
+
+    #[test]
+    #[cfg(feature = "load_after_build")]
+    fn test_config_load() {
+        let mut config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        config
+            .load(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"new_value\", \"another_key\": \"another_value\"}",
+            ))
+            .unwrap();
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("new_value".to_string())
+        );
+
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap()
+            .load(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"new_value}",
+            ));
+        assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_config_save() {
+        let mut config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        config.set("key", Value::String("new_value".to_string()));
+        let save = config.save(FileFormat::Json).unwrap();
+        assert_eq!(save, "{\"key\":\"new_value\"}");
+    }
+
+    #[test]
+    fn test_builder_failed_parse_file() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value}",
+            ))
+            .build();
+        assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_builder_load() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .load(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"new_value\"}",
+            ))
+            .unwrap()
+            .build()
+            .unwrap();
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("new_value".to_string())
+        );
+    }
+
+    #[test]
+    fn test_builder_load_failure() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .load(File::new_str("test_file", FileFormat::Json, ""));
+        assert!(config.is_err());
+    }
+
+    #[test]
+    fn test_builder_load_none() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .load(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key2\": \"new_value\"}",
+            ))
+            .unwrap()
+            .build()
+            .unwrap();
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("value".to_string())
+        );
+        assert!(config.get("key2").is_none());
+    }
+
+    #[test]
+    #[cfg(feature = "env")]
+    fn test_env_vars() {
+        unsafe {
+            std::env::set_var("KEY", "overwrite");
+        }
+
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+        assert_eq!(
+            config.get("key").unwrap(),
+            &Value::String("overwrite".to_string())
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "env")]
+    fn test_env_vars_table() {
+        unsafe {
+            std::env::set_var("KEY", "");
+        }
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key\": {\"secondary_key\": \"value\"}}",
+            ))
+            .build()
+            .unwrap();
+        let mut expected = Map::new();
+        expected.insert(
+            "secondary_key".to_string(),
+            Value::String("value".to_string()),
+        );
+        assert_eq!(config.get("key").unwrap(), &Value::Table(expected));
+    }
+
+    mod serialize_deserialize {
+        use super::*;
+
+        #[test]
+        #[cfg(feature = "ini")]
+        fn test_deserialize_ini() {
+            let ini = r#"[section]
+key: "value""#;
+            let map = load_map(ini.to_string(), FileFormat::Ini);
+            assert!(map.is_ok());
+        }
+
+        #[test]
+        #[cfg(feature = "ini")]
+        fn test_serialize_ini() {
+            let map = Map::new();
+            let ini = save_map(&map, FileFormat::Ini);
+            assert!(ini.is_err());
+        }
+
+        #[test]
+        #[cfg(feature = "json")]
+        fn test_deserialize_json() {
+            let json = r#"{"key": "value"}"#;
+            let map = load_map(json.to_string(), FileFormat::Json);
+            assert!(map.is_ok());
+        }
+
+        #[test]
+        #[cfg(feature = "json")]
+        fn test_serialize_json() {
+            let map = Map::new();
+            let json = save_map(&map, FileFormat::Json).unwrap();
+            assert_eq!(json, "{}");
+        }
+
+        #[test]
+        #[cfg(feature = "yaml")]
+        fn test_deserialize_yaml() {
+            let yaml = r#"key: value"#;
+            let map = load_map(yaml.to_string(), FileFormat::Yaml);
+            assert!(map.is_ok());
+        }
+
+        #[test]
+        #[cfg(feature = "yaml")]
+        fn test_serialize_yaml() {
+            let map = Map::new();
+            let yaml = save_map(&map, FileFormat::Yaml).unwrap();
+            assert_eq!(yaml, "---\n{}");
+        }
+
+        #[test]
+        #[cfg(feature = "toml")]
+        fn test_deserialize_toml() {
+            let toml = r#"
+val = "value""#;
+            let map = load_map(toml.to_string(), FileFormat::Toml);
+            assert!(map.is_ok());
+        }
+
+        #[test]
+        #[cfg(feature = "toml")]
+        fn test_serialize_toml() {
+            let map = Map::new();
+            let toml = save_map(&map, FileFormat::Toml).unwrap();
+            assert_eq!(toml, "");
+        }
+
+        #[test]
+        #[cfg(feature = "ron")]
+        fn test_deserialize_ron() {
+            let ron = r#"(key: "value")"#;
+            let map = load_map(ron.to_string(), FileFormat::Ron);
+            assert!(map.is_ok());
+        }
+
+        #[test]
+        #[cfg(feature = "ron")]
+        fn test_serialize_ron() {
+            let map = Map::new();
+            let ron = save_map(&map, FileFormat::Ron).unwrap();
+            assert_eq!(ron, "{}");
         }
     }
 }

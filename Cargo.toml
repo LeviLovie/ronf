@@ -54,3 +54,7 @@ required-features = ["toml"]
 name = "ron"
 path = "examples/formats/ron.rs"
 required-features = ["ron"]
+
+[[example]]
+name = "env"
+required-features = ["env"]
