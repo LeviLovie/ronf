@@ -178,6 +178,9 @@ jobs:
       - name: Install cargo-llvm-cov
         run: cargo install cargo-llvm-cov
 
+      - name: Make a directory to store coverage in
+        run: mkdir coverage
+
       - name: Gather coverage
         run: cargo llvm-cov --lcov --output-path coverage/lcov.info
 
