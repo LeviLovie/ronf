@@ -1,8 +1,7 @@
 [![Rust](https://github.com/LeviLovie/ronf/actions/workflows/ci.yaml/badge.svg)](https://github.com/LeviLovie/ronf/actions)
 [![Docs](https://docs.rs/ronf/badge.svg)](https://docs.rs/ronf)
 [![Crates](https://img.shields.io/crates/v/ronf.svg)](https://crates.io/crates/ronf)
-![License](https://img.shields.io/crates/l/ronf.svg)
-
+[![License](https://img.shields.io/crates/l/ronf.svg)](https://choosealicense.com/licenses/mit/)
 # Ronf
 
 A configuration library with saving based on [config-rs](https://github.com/rust-cli/config-rs/tree/main).
