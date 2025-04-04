@@ -166,16 +166,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          components: llvm-tools-preview
+
       - uses: Swatinem/rust-cache@v2
-      - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+
       - name: Gather coverage
-        run: cargo tarpaulin --output-dir coverage --out lcov
-      - name: Publish to Coveralls
-        uses: coverallsapp/github-action@master
+        run: cargo llvm-cov --lcov --output-path coverage/lcov.info
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
