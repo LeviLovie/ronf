@@ -332,11 +332,11 @@ mod test {
     #[test]
     fn test_value_is_table() {
         let value = Value::new(Value::None);
-        assert_eq!(value.is_table(), false);
+        assert!(!value.is_table());
         let mut map = Map::new();
         map.insert("key".to_string(), Value::String("value".to_string()));
         let value = Value::new(Value::Table(map));
-        assert_eq!(value.is_table(), true);
+        assert!(value.is_table());
     }
 
     #[test]
