@@ -1,0 +1,74 @@
+name: Coverage Report
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+  CLICOLOR: 1
+
+jobs:
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+
+      - name: Make a directory to store coverage in
+        run: mkdir coverage
+
+      - name: Gather coverage all features
+        run: |
+          cargo llvm-cov --lcov --all-features --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --all-features --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_all.txt
+
+      - name: Gather coverage default features
+        run: |
+          cargo llvm-cov --lcov --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_default.txt
+
+      - name: Gather coverage none features
+        run: |
+          cargo llvm-cov --lcov --no-default-features --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --no-default-features --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_none.txt
+
+      - name: Create json
+        run: |
+          ALL=$(cat coverage/coverage_all.txt)
+          DEFAULT=$(cat coverage/coverage_default.txt)
+          NONE=$(cat coverage/coverage_none.txt)
+
+          AVG=$(echo "scale=1; (($ALL + $DEFAULT + $NONE) / 3)" | bc)
+
+          echo "{\"coverage_all\": ${ALL}, \"coverage_default\": ${DEFAULT}, \"coverage_none\": ${NONE}, \"coverage_avg\": ${AVG}}" > coverage/coverage.json
+
+      - name: Upload coverage report
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout --orphan gh-pages
+          mv coverage/coverage.json .
+          git add coverage.json
+          git commit -m "Update coverage"
+          git push -f origin gh-pages

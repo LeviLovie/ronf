@@ -554,7 +554,7 @@ key: "value""#;
 
         #[test]
         #[cfg(not(feature = "ini"))]
-        fn test_deserialize_ini_failure() {
+        fn test_deserialize_init_failure() {
             let ini = r#"[section]
 key: "value""#;
             let map = load_map(ini.to_string(), FileFormat::Ini);
