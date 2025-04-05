@@ -1,6 +1,6 @@
 [![Rust](https://github.com/LeviLovie/ronf/actions/workflows/ci.yaml/badge.svg)](https://github.com/LeviLovie/ronf/actions)
 [![Docs](https://docs.rs/ronf/badge.svg)](https://docs.rs/ronf)
-![Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/LeviLovie/ronf/gh-pages/coverage.json&query=$.coverage&label=Coverage)
+![Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/LeviLovie/ronf/gh-pages/coverage.json&query=$.coverage&label=coverage)
 [![Crates](https://img.shields.io/crates/v/ronf.svg)](https://crates.io/crates/ronf)
 [![License](https://img.shields.io/crates/l/ronf.svg)](https://choosealicense.com/licenses/mit/)
 # Ronf
@@ -40,3 +40,4 @@ For more examples, check `examples/`. Run with `cargo run --example FILE_NAME`.
 - `json` - Load [Json files](https://en.wikipedia.org/wiki/JSON).
 - `yaml` - Load [Yaml files](https://en.wikipedia.org/wiki/YAML).
 - `toml` - Load [Toml files](https://en.wikipedia.org/wiki/TOML).
+- `ron` - Load [Ron files](https://github.com/ron-rs/ron).
