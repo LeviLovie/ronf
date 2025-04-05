@@ -181,20 +181,31 @@ jobs:
       - name: Make a directory to store coverage in
         run: mkdir coverage
 
-      - name: Gather coverage
-        run: cargo llvm-cov --lcov --all-features --output-path coverage/lcov.info
-
-      - name: Generate coverage summary
-        run: cargo llvm-cov --summary-only --all-features --json > coverage/summary.json
-
-      - name: Extract coverage percentage
+      - name: Gather coverage all features
         run: |
-          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage.txt
+          cargo llvm-cov --lcov --all-features --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --all-features --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_all.txt
+
+      - name: Gather coverage default features
+        run: |
+          cargo llvm-cov --lcov --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_default.txt
+
+      - name: Gather coverage none features
+        run: |
+          cargo llvm-cov --lcov --no-default-features --output-path coverage/lcov.info
+          cargo llvm-cov --summary-only --no-default-features --json > coverage/summary.json
+          jq '.data[0].totals.lines.percent' coverage/summary.json > coverage/coverage_none.txt
 
       - name: Create json
         run: |
-          COVERAGE=$(jq '.data[0].totals.lines.percent' coverage/summary.json)
-          echo "{\"coverage\": \"${COVERAGE}%\"}" > coverage/coverage.json
+          ALL=$(cat coverage/coverage_all.txt)
+          DEFAULT=$(cat coverage/coverage_default.txt)
+          NONE=$(cat coverage/coverage_none.txt)
+          AVG=$(echo "($ALL + $DEFAULT + $NONE) / 3" | bc -l)
+          echo "{\"coverage_all\": ${ALL}, \"coverage_default\": ${DEFAULT}, \"coverage_none\": ${NONE}, \"coverage_avg\": ${AVG}}" > coverage/coverage.json
 
       - name: Upload coverage report
         run: |

@@ -316,9 +316,27 @@ mod test {
     }
 
     #[test]
+    fn test_value_get_table() {
+        let mut map = Map::new();
+        map.insert("key".to_string(), Value::String("value".to_string()));
+        let value = Value::new(Value::Table(map));
+        assert_eq!(value.get("key"), Some(&Value::String("value".to_string())));
+    }
+
+    #[test]
     fn test_value_get_not_found() {
         let value = Value::new(Value::None);
         assert_eq!(value.get("key"), None);
+    }
+
+    #[test]
+    fn test_value_is_table() {
+        let value = Value::new(Value::None);
+        assert!(!value.is_table());
+        let mut map = Map::new();
+        map.insert("key".to_string(), Value::String("value".to_string()));
+        let value = Value::new(Value::Table(map));
+        assert!(value.is_table());
     }
 
     #[test]
@@ -714,7 +732,6 @@ mod test {
         }
 
         #[test]
-        #[cfg(feature = "ordered")]
         fn test_value_try_into_map() {
             let value = Value::Table(Map::new());
             let result: Result<Map<String, Value>, CannotConvert> = value.try_into();

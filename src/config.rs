@@ -135,6 +135,15 @@ impl Config {
     }
 }
 
+impl std::fmt::Display for Config {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (key, val) in self.values.iter() {
+            writeln!(f, "{}: {}", key, val)?;
+        }
+        Ok(())
+    }
+}
+
 fn save_map(_map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
     match format {
         FileFormat::Ini => {
@@ -295,6 +304,55 @@ mod test {
             .build()
             .unwrap();
         assert_eq!(config.list(), vec!["key3".to_string()]);
+    }
+
+    #[cfg(feature = "json")]
+    mod config_display {
+        use super::*;
+        use std::fmt::{self, Write};
+
+        #[test]
+        fn test_config_display() {
+            let config = Config::builder()
+                .add_file(File::new_str(
+                    "test_file",
+                    FileFormat::Json,
+                    "{\"key3_2\": \"value\"}",
+                ))
+                .build()
+                .unwrap();
+
+            let mut output = String::new();
+            let result = write!(&mut output, "{}", config);
+
+            assert!(result.is_ok());
+            assert_eq!(output, "key3_2: \"value\"\n");
+        }
+
+        struct FailingWriter;
+
+        impl Write for FailingWriter {
+            fn write_str(&mut self, _s: &str) -> fmt::Result {
+                Err(fmt::Error) // Simulate a write failure
+            }
+        }
+
+        #[test]
+        fn test_config_display_write_error() {
+            let config = Config::builder()
+                .add_file(File::new_str(
+                    "test_file",
+                    FileFormat::Json,
+                    "{\"key3_2\": \"value\"}",
+                ))
+                .build()
+                .unwrap();
+
+            let mut failing_writer = FailingWriter;
+            let result = write!(&mut failing_writer, "{}", config);
+
+            assert!(result.is_err()); // Ensure that write errors propagate
+        }
     }
 
     #[test]
@@ -495,6 +553,23 @@ key: "value""#;
         }
 
         #[test]
+        #[cfg(not(feature = "ini"))]
+        fn test_deserialize_ini_failure() {
+            let ini = r#"[section]
+key: "value""#;
+            let map = load_map(ini.to_string(), FileFormat::Ini);
+            assert!(map.is_err());
+        }
+
+        #[test]
+        #[cfg(not(feature = "ini"))]
+        fn test_serialize_ini_failure() {
+            let map = Map::new();
+            let ini = save_map(&map, FileFormat::Ini);
+            assert!(ini.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "json")]
         fn test_deserialize_json() {
             let json = r#"{"key": "value"}"#;
@@ -511,6 +586,22 @@ key: "value""#;
         }
 
         #[test]
+        #[cfg(not(feature = "json"))]
+        fn test_deserialize_json_failure() {
+            let json = r#"{"key": "value"}"#;
+            let map = load_map(json.to_string(), FileFormat::Json);
+            assert!(map.is_err());
+        }
+
+        #[test]
+        #[cfg(not(feature = "json"))]
+        fn test_serialize_json_failure() {
+            let map = Map::new();
+            let json = save_map(&map, FileFormat::Json);
+            assert!(json.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "yaml")]
         fn test_deserialize_yaml() {
             let yaml = r#"key: value"#;
@@ -524,6 +615,22 @@ key: "value""#;
             let map = Map::new();
             let yaml = save_map(&map, FileFormat::Yaml).unwrap();
             assert_eq!(yaml, "---\n{}");
+        }
+
+        #[test]
+        #[cfg(not(feature = "yaml"))]
+        fn test_deserialize_yaml_failure() {
+            let yaml = r#"key: value"#;
+            let map = load_map(yaml.to_string(), FileFormat::Yaml);
+            assert!(map.is_err());
+        }
+
+        #[test]
+        #[cfg(not(feature = "yaml"))]
+        fn test_serialize_yaml_failure() {
+            let map = Map::new();
+            let yaml = save_map(&map, FileFormat::Yaml);
+            assert!(yaml.is_err());
         }
 
         #[test]
@@ -544,6 +651,23 @@ val = "value""#;
         }
 
         #[test]
+        #[cfg(not(feature = "toml"))]
+        fn test_deserialize_toml_failure() {
+            let toml = r#"
+key = "value""#;
+            let map = load_map(toml.to_string(), FileFormat::Toml);
+            assert!(map.is_err());
+        }
+
+        #[test]
+        #[cfg(not(feature = "toml"))]
+        fn test_serialize_toml_failure() {
+            let map = Map::new();
+            let toml = save_map(&map, FileFormat::Toml);
+            assert!(toml.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "ron")]
         fn test_deserialize_ron() {
             let ron = r#"(key: "value")"#;
@@ -557,6 +681,22 @@ val = "value""#;
             let map = Map::new();
             let ron = save_map(&map, FileFormat::Ron).unwrap();
             assert_eq!(ron, "{}");
+        }
+
+        #[test]
+        #[cfg(not(feature = "ron"))]
+        fn test_deserialize_ron_failure() {
+            let ron = r#"(key: "value")"#;
+            let map = load_map(ron.to_string(), FileFormat::Ron);
+            assert!(map.is_err());
+        }
+
+        #[test]
+        #[cfg(not(feature = "ron"))]
+        fn test_serialize_ron_failure() {
+            let map = Map::new();
+            let ron = save_map(&map, FileFormat::Ron);
+            assert!(ron.is_err());
         }
     }
 }
