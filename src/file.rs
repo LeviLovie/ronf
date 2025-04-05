@@ -234,6 +234,19 @@ key: value"#
         }
 
         #[test]
+        #[cfg(not(feature = "ini"))]
+        fn test_parse_ini_fail() {
+            let path = "test.ini".to_string();
+            let format = FileFormat::Ini;
+            let content = r#"[section]
+key: value"#
+                .to_string();
+            let file = File::new(path.clone(), format.clone(), content.clone());
+            let result = file.parse();
+            assert!(result.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "json")]
         fn test_parse_json() {
             let path = "test.json".to_string();
@@ -242,6 +255,17 @@ key: value"#
             let file = File::new(path.clone(), format.clone(), content.clone());
             let result = file.parse();
             assert!(result.is_ok());
+        }
+
+        #[test]
+        #[cfg(not(feature = "json"))]
+        fn test_parse_json_fail() {
+            let path = "test.json".to_string();
+            let format = FileFormat::Json;
+            let content = r#"{"key": "value"}"#.to_string();
+            let file = File::new(path.clone(), format.clone(), content.clone());
+            let result = file.parse();
+            assert!(result.is_err());
         }
 
         #[test]
@@ -256,6 +280,17 @@ key: value"#
         }
 
         #[test]
+        #[cfg(not(feature = "yaml"))]
+        fn test_parse_yaml_fail() {
+            let path = "test.yaml".to_string();
+            let format = FileFormat::Yaml;
+            let content = r#"key: value"#.to_string();
+            let file = File::new(path.clone(), format.clone(), content.clone());
+            let result = file.parse();
+            assert!(result.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "toml")]
         fn test_parse_toml() {
             let path = "test.toml".to_string();
@@ -267,6 +302,17 @@ key: value"#
         }
 
         #[test]
+        #[cfg(not(feature = "toml"))]
+        fn test_parse_toml_fail() {
+            let path = "test.toml".to_string();
+            let format = FileFormat::Toml;
+            let content = r#"key = "value""#.to_string();
+            let file = File::new(path.clone(), format.clone(), content.clone());
+            let result = file.parse();
+            assert!(result.is_err());
+        }
+
+        #[test]
         #[cfg(feature = "ron")]
         fn test_parse_ron() {
             let path = "test.ron".to_string();
@@ -275,6 +321,17 @@ key: value"#
             let file = File::new(path.clone(), format.clone(), content.clone());
             let result = file.parse();
             assert!(result.is_ok());
+        }
+
+        #[test]
+        #[cfg(not(feature = "ron"))]
+        fn test_parse_ron_fail() {
+            let path = "test.ron".to_string();
+            let format = FileFormat::Ron;
+            let content = r#"(key: "value")"#.to_string();
+            let file = File::new(path.clone(), format.clone(), content.clone());
+            let result = file.parse();
+            assert!(result.is_err());
         }
     }
 }
