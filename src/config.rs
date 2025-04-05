@@ -135,6 +135,15 @@ impl Config {
     }
 }
 
+impl std::fmt::Display for Config {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (key, val) in self.values.iter() {
+            write!(f, "{}: {}\n", key, val)?;
+        }
+        return Ok(());
+    }
+}
+
 fn save_map(_map: &Map<String, Value>, format: FileFormat) -> Result<String, String> {
     match format {
         FileFormat::Ini => {
@@ -295,6 +304,53 @@ mod test {
             .build()
             .unwrap();
         assert_eq!(config.list(), vec!["key3".to_string()]);
+    }
+
+    use std::fmt::{self, Write};
+
+    #[test]
+    #[cfg(feature = "json")]
+    fn test_config_display() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key3_2\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+
+        let mut output = String::new();
+        let result = write!(&mut output, "{}", config);
+
+        assert!(result.is_ok());
+        assert_eq!(output, "key3_2: \"value\"\n");
+    }
+
+    struct FailingWriter;
+
+    impl Write for FailingWriter {
+        fn write_str(&mut self, _s: &str) -> fmt::Result {
+            Err(fmt::Error) // Simulate a write failure
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "json")]
+    fn test_config_display_write_error() {
+        let config = Config::builder()
+            .add_file(File::new_str(
+                "test_file",
+                FileFormat::Json,
+                "{\"key3_2\": \"value\"}",
+            ))
+            .build()
+            .unwrap();
+
+        let mut failing_writer = FailingWriter;
+        let result = write!(&mut failing_writer, "{}", config);
+
+        assert!(result.is_err()); // Ensure that write errors propagate
     }
 
     #[test]

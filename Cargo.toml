@@ -58,3 +58,7 @@ required-features = ["ron"]
 [[example]]
 name = "env"
 required-features = ["env"]
+
+[[example]]
+name = "ron_json_saves"
+required-features = ["ron", "json"]
