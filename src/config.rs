@@ -24,7 +24,7 @@ impl ConfigBuilder {
         config.values = config.defaults.clone();
 
         for (key, value) in self.changes.iter() {
-            if config.values.get(key).is_some() {
+            if config.values.contains_key(key) {
                 config.values.insert(key.clone(), value.clone());
             }
         }
@@ -112,7 +112,7 @@ impl Config {
     }
 
     pub fn list(&self) -> Vec<String> {
-        self.values.iter().map(|(key, _)| key.clone()).collect()
+        self.values.keys().cloned().collect()
     }
 
     #[cfg(feature = "load_after_build")]
