@@ -204,7 +204,9 @@ jobs:
           ALL=$(cat coverage/coverage_all.txt)
           DEFAULT=$(cat coverage/coverage_default.txt)
           NONE=$(cat coverage/coverage_none.txt)
-          AVG=$(echo "($ALL + $DEFAULT + $NONE) / 3" | bc -l)
+
+          AVG=$(echo "scale=1; (($ALL + $DEFAULT + $NONE) / 3)" | bc)
+
           echo "{\"coverage_all\": ${ALL}, \"coverage_default\": ${DEFAULT}, \"coverage_none\": ${NONE}, \"coverage_avg\": ${AVG}}" > coverage/coverage.json
 
       - name: Upload coverage report
