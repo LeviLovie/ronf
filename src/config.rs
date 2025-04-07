@@ -82,7 +82,7 @@ fn get_env_vars() -> Map<String, Value> {
 /// ```rust
 /// #[cfg(features = "json")]
 /// {
-/// use ronf::prelude::{Config, File, FileFormat};
+/// use ronf::{Config, File, FileFormat};
 /// let config = Config::builder().add_file(File::new_str("test_file", FileFormat::Json, "{\"key\":
 /// \"value\"}")).build().unwrap();
 /// println!("\"key\": {}", config.get("key").unwrap());

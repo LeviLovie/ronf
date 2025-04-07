@@ -1,5 +1,5 @@
 //! Save changes to RON default config in json format.
-use ronf::prelude::{Config, File, FileFormat, Value};
+use ronf::{Config, File, FileFormat, Value};
 
 fn main() {
     let defaults = File::new_str(

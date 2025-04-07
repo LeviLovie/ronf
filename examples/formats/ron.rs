@@ -1,4 +1,4 @@
-use ronf::prelude::{Config, File, FileFormat};
+use ronf::{Config, File, FileFormat};
 
 fn main() {
     let config = Config::builder()
