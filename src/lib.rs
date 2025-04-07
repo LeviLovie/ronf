@@ -11,6 +11,8 @@
 //! File can be created with `ronf::File::new("config.json", ronf::FileFormat::Json,
 //! "{\"key\":\"value\"")` or loaded from disk if `read_file` feature is enabled.
 //! ```rust
+//! #[cfg(feature = "json")]
+//! {
 //! use ronf::{Config, File, FileFormat};
 //! let file: File = File::new_str(
 //!     "config.json",
@@ -22,6 +24,7 @@
 //!     .build()
 //!     .unwrap();
 //! println!("\"key\": {}", config.get("key").unwrap());
+//! }
 //! ```
 //!
 //! Check `examples/saves.rs` to see how to save changes to a config.

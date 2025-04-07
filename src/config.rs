@@ -69,6 +69,8 @@ impl ConfigBuilder {
     /// Loads changes to default configuration from `.add_file()` from a file.
     /// Example:
     /// ```rust
+    /// #[cfg(features = "json")]
+    /// {
     /// use ronf::{Config, File, FileFormat};
     /// let default_file = File::new_str("test_file", FileFormat::Json, "{\"key\": \"value\"}");
     /// let save = {
@@ -88,6 +90,7 @@ impl ConfigBuilder {
     ///     .build()
     ///     .unwrap();
     /// println!("\"key\" after load: {}", loaded_config.get("key").unwrap());
+    /// }
     /// ```
     pub fn load(mut self, file: File) -> Result<Self, String> {
         self.changes = load_map(file.content, file.format)?;
