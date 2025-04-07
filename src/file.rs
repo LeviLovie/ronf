@@ -1,5 +1,8 @@
+//! File handling
+
 use crate::value::{Map, Value};
 
+/// Supported file formats.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileFormat {
     Ini,
@@ -10,6 +13,7 @@ pub enum FileFormat {
 }
 
 impl FileFormat {
+    /// Get the file format from the file extension string.
     pub fn from_extension(extension: &str) -> Option<Self> {
         match extension {
             "ini" => Some(FileFormat::Ini),
@@ -34,6 +38,7 @@ impl std::fmt::Display for FileFormat {
     }
 }
 
+/// Representation of a configuration file.
 #[derive(Debug, Clone)]
 pub struct File {
     pub path: String,
@@ -42,6 +47,7 @@ pub struct File {
 }
 
 impl File {
+    /// Create a new file with the given path, format, and content.
     pub fn new(path: String, format: FileFormat, content: String) -> Self {
         File {
             path,
@@ -50,6 +56,7 @@ impl File {
         }
     }
 
+    /// Create a new file with the given path, format, and content as a &str.
     pub fn new_str(path: &str, format: FileFormat, content: &str) -> Self {
         File {
             path: path.to_string(),
@@ -58,6 +65,7 @@ impl File {
         }
     }
 
+    /// Create a new file from a path, reading the content from the file.
     #[cfg(feature = "read_file")]
     pub fn from_path(path: String) -> Result<Self, String> {
         let extension = path
@@ -73,6 +81,7 @@ impl File {
         Ok(File::new(path.clone(), format, content))
     }
 
+    /// Create a new file from a path and format, reading the content from the file.
     #[cfg(feature = "read_file")]
     pub fn from_path_format(path: String, format: FileFormat) -> Result<Self, String> {
         let content = std::fs::read_to_string(&path)
@@ -81,6 +90,7 @@ impl File {
         Ok(File::new(path.clone(), format, content))
     }
 
+    /// Parse the content of the file to be used in the Config.
     pub fn parse(&self) -> Result<Map<String, Value>, String> {
         match self.format {
             FileFormat::Ini => {

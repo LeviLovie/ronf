@@ -1,3 +1,4 @@
+/// Error to indicate that a conversion between two types is not possible
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CannotConvert {
     from: String,
