@@ -1,12 +1,16 @@
+//! Configuration structure
+
 use crate::file::{File, FileFormat};
 use crate::value::{Map, Value};
 
+/// Builder for the Config struct
 pub struct ConfigBuilder {
     pub files: Vec<File>,
     pub changes: Map<String, Value>,
 }
 
 impl ConfigBuilder {
+    /// Creates a new ConfigBuilder instance
     pub fn build(self) -> Result<Config, String> {
         let mut config = Config {
             defaults: Map::new(),
@@ -56,11 +60,38 @@ impl ConfigBuilder {
         Ok(config)
     }
 
+    /// Adds a file to the builder
     pub fn add_file(mut self, file: File) -> Self {
         self.files.push(file);
         self
     }
 
+    /// Loads changes to default configuration from `.add_file()` from a file.
+    /// Example:
+    /// ```rust
+    /// #[cfg(features = "json")]
+    /// {
+    /// use ronf::{Config, File, FileFormat};
+    /// let default_file = File::new_str("test_file", FileFormat::Json, "{\"key\": \"value\"}");
+    /// let save = {
+    ///     let mut config = Config::builder()
+    ///         .add_file(default_file.clone())
+    ///         .build()
+    ///         .unwrap();
+    ///     println!("\"key\": {}", config.get("key").unwrap());
+    ///     config.set("key", "another value".into());
+    ///     println!("\"key\" after change: {}", config.get("key").unwrap());
+    ///     config.save(FileFormat::Json).unwrap()
+    /// };
+    /// let loaded_config = Config::builder()
+    ///     .add_file(default_file.clone())
+    ///     .load(File::new("save.json".to_string(), FileFormat::Json, save))
+    ///     .unwrap()
+    ///     .build()
+    ///     .unwrap();
+    /// println!("\"key\" after load: {}", loaded_config.get("key").unwrap());
+    /// }
+    /// ```
     pub fn load(mut self, file: File) -> Result<Self, String> {
         self.changes = load_map(file.content, file.format)?;
         Ok(self)
@@ -82,7 +113,7 @@ fn get_env_vars() -> Map<String, Value> {
 /// ```rust
 /// #[cfg(features = "json")]
 /// {
-/// use ronf::prelude::{Config, File, FileFormat};
+/// use ronf::{Config, File, FileFormat};
 /// let config = Config::builder().add_file(File::new_str("test_file", FileFormat::Json, "{\"key\":
 /// \"value\"}")).build().unwrap();
 /// println!("\"key\": {}", config.get("key").unwrap());
@@ -95,6 +126,7 @@ pub struct Config {
 }
 
 impl Config {
+    /// Creates a ConfigBuilder
     pub fn builder() -> ConfigBuilder {
         ConfigBuilder {
             files: Vec::new(),
@@ -102,19 +134,23 @@ impl Config {
         }
     }
 
+    /// Get a value from config using a key
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.values.get(key)
     }
 
+    /// Set a value in config changes using a key
     pub fn set(&mut self, key: &str, value: Value) {
         self.changes.insert(key.to_string(), value.clone());
         self.values.insert(key.to_string(), value);
     }
 
+    /// List all keys in the config
     pub fn list(&self) -> Vec<String> {
         self.values.keys().cloned().collect()
     }
 
+    /// Load changes to default configuration from `.add_file()` from a file.
     #[cfg(feature = "load_after_build")]
     pub fn load(&mut self, file: File) -> Result<(), String> {
         let parsed = file
@@ -130,6 +166,7 @@ impl Config {
         Ok(())
     }
 
+    /// Save the current configuration to a file in the specified format
     pub fn save(&self, format: FileFormat) -> Result<String, String> {
         save_map(&self.changes, format)
     }

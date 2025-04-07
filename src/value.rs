@@ -1,14 +1,21 @@
+//! Definition for `Value`
+
 use crate::error::CannotConvert;
 use std::convert::{From, TryInto};
 
+/// A type alias for a map that can be either ordered or unordered.
 #[cfg(feature = "ordered")]
 pub(crate) type Map<K, V> = indexmap::IndexMap<K, V>;
 #[cfg(not(feature = "ordered"))]
 pub(crate) type Map<K, V> = std::collections::HashMap<K, V>;
 
+/// A type alias for an Array in a config
 pub(crate) type Array = Vec<Value>;
+
+/// A type alias for a Table in a config
 pub(crate) type Table = Map<String, Value>;
 
+/// A type that represents a value in a configuration file.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum Value {
     #[default]
@@ -22,6 +29,7 @@ pub enum Value {
 }
 
 impl Value {
+    /// Creates a new `Value` from a given variable.
     pub fn new<V>(value: V) -> Self
     where
         V: Into<Value>,
@@ -29,6 +37,7 @@ impl Value {
         value.into()
     }
 
+    /// Retrieves a value from a table by its key.
     pub fn get(&self, key: &str) -> Option<&Value> {
         match self {
             Value::Table(table) => table.get(key),
@@ -36,6 +45,7 @@ impl Value {
         }
     }
 
+    /// Retrieves a mutable reference to a value from a table by its key.
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
         match self {
             Value::Table(table) => table.get_mut(key),
@@ -43,6 +53,7 @@ impl Value {
         }
     }
 
+    /// Checks if the value is a table.
     pub fn is_table(&self) -> bool {
         matches!(self, Value::Table(_))
     }
