@@ -4,10 +4,7 @@ use crate::error::CannotConvert;
 use std::convert::{From, TryInto};
 
 /// A type alias for a map that can be either ordered or unordered.
-#[cfg(feature = "ordered")]
 pub(crate) type Map<K, V> = indexmap::IndexMap<K, V>;
-#[cfg(not(feature = "ordered"))]
-pub(crate) type Map<K, V> = std::collections::HashMap<K, V>;
 
 /// A type alias for an Array in a config
 pub(crate) type Array = Vec<Value>;
@@ -37,7 +34,39 @@ impl Value {
         value.into()
     }
 
-    /// Retrieves a value from a table by its key.
+    /// Gets a reference to the value associated with the given key in a table.
+    pub fn as_table(&self) -> Option<&Table> {
+        match self {
+            Value::Table(table) => Some(table),
+            _ => None,
+        }
+    }
+
+    /// Gets a mutable reference to the value associated with the given key in a table.
+    pub fn as_table_mut(&mut self) -> Option<&mut Table> {
+        match self {
+            Value::Table(table) => Some(table),
+            _ => None,
+        }
+    }
+
+    /// Gets a reference to the value associated with the given key in a table.
+    pub fn as_array(&self) -> Option<&Array> {
+        match self {
+            Value::Array(array) => Some(array),
+            _ => None,
+        }
+    }
+
+    /// Gets a mutable reference to the value associated with the given key in a table.
+    pub fn as_array_mut(&mut self) -> Option<&mut Array> {
+        match self {
+            Value::Array(array) => Some(array),
+            _ => None,
+        }
+    }
+
+    /// Gets a reference to the value associated with the given key in a table.
     pub fn get(&self, key: &str) -> Option<&Value> {
         match self {
             Value::Table(table) => table.get(key),
@@ -45,7 +74,7 @@ impl Value {
         }
     }
 
-    /// Retrieves a mutable reference to a value from a table by its key.
+    /// Gets a mutable reference to the value associated with the given key in a table.
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
         match self {
             Value::Table(table) => table.get_mut(key),

@@ -10,8 +10,8 @@ homepage = "https://github.com/LeviLovie/ronf"
 
 [dependencies]
 serde = "1.0.219"
+indexmap = "2.8.0"
 
-indexmap = { version = "2.8.0", optional = true }
 serde_json = { version = "1.0.140", optional = true }
 yaml-rust2 = { version = "0.10.1", optional = true }
 rust-ini = { version = "0.21.1", optional = true }
@@ -19,8 +19,7 @@ toml = { version = "0.8.20", optional = true }
 ron = { version = "0.9.0", optional = true }
 
 [features]
-default = ["ordered", "json"]
-ordered = ["dep:indexmap"]
+default = ["json"]
 load_after_build = []
 read_file = []
 env = []
