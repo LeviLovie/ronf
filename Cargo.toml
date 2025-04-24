@@ -1,0 +1,63 @@
+[package]
+name = "ronf"
+version = "0.4.2"
+edition = "2024"
+rust-version = "1.86.0"
+license = "MIT"
+description = "Configuration system with saving"
+repository = "https://github.com/LeviLovie/ronf"
+homepage = "https://github.com/LeviLovie/ronf"
+
+[dependencies]
+serde = "1.0.219"
+indexmap = "2.8.0"
+
+serde_json = { version = "1.0.140", optional = true }
+yaml-rust2 = { version = "0.10.1", optional = true }
+rust-ini = { version = "0.21.1", optional = true }
+toml = { version = "0.8.20", optional = true }
+ron = { version = "0.9.0", optional = true }
+
+[features]
+default = ["json"]
+load_after_build = []
+read_file = []
+env = []
+json = ["dep:serde_json"]
+yaml = ["dep:yaml-rust2"]
+ini = ["dep:rust-ini"]
+toml = ["dep:toml"]
+ron = ["dep:ron"]
+
+[[example]]
+name = "json"
+path = "examples/formats/json.rs"
+required-features = ["json"]
+
+[[example]]
+name = "yaml"
+path = "examples/formats/yaml.rs"
+required-features = ["yaml"]
+
+[[example]]
+name = "ini"
+path = "examples/formats/ini.rs"
+required-features = ["ini"]
+
+[[example]]
+name = "toml"
+path = "examples/formats/toml.rs"
+required-features = ["toml"]
+
+[[example]]
+name = "ron"
+path = "examples/formats/ron.rs"
+required-features = ["ron"]
+
+[[example]]
+name = "env"
+required-features = ["env"]
+
+[[example]]
+name = "ron_json_saves"
+required-features = ["ron", "json"]
